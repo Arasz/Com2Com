@@ -77,16 +77,27 @@
     </ApplicationDefinition>
     <Compile Include="Common\NavigationHelper.cs" />
     <Compile Include="Model\ComDevice.cs" />
-    <Compile Include="ViewModel\MasterViewModel.cs" />
+    <Compile Include="Model\MasterDeviceModel.cs" />
+    <Compile Include="Model\SlaveDeviceModel.cs" />
+    <Compile Include="Model\SlaveModel.cs" />
+    <Compile Include="ViewModel\MasterDeviceViewModel.cs" />
     <Compile Include="ViewModel\SettingsViewModel.cs" />
+    <Compile Include="ViewModel\SlaveViewModel.cs" />
+    <Compile Include="ViewModel\SlaveDeviceViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
-    <Compile Include="View\MasterPage.xaml.cs">
-      <DependentUpon>MasterPage.xaml</DependentUpon>
+    <Compile Include="View\MasterDevicePage.xaml.cs">
+      <DependentUpon>MasterDevicePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\SettingsPage.xaml.cs">
       <DependentUpon>SettingsPage.xaml</DependentUpon>
     </Compile>
-    <Page Include="View\MasterPage.xaml">
+    <Compile Include="View\SlavePage.xaml.cs">
+      <DependentUpon>SlavePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\SlaveDevicePage.xaml.cs">
+      <DependentUpon>SlaveDevicePage.xaml</DependentUpon>
+    </Compile>
+    <Page Include="View\MasterDevicePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -103,6 +114,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\SettingsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SlavePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SlaveDevicePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

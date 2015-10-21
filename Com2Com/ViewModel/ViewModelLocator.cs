@@ -8,7 +8,7 @@
   In the View:
   DataContext="{Binding Source={StaticResource Locator}, Path=ViewModelName}"
 
-  You can also use Blend to do all this with the tool's support.
+  You can also use Blend to do all this with the tool's support. 
   See http://www.galasoft.ch/mvvm
 */
 
@@ -42,15 +42,17 @@ namespace Com2Com.ViewModel
             ////    SimpleIoc.Default.Register<IDataService, DataService>();
             ////}
 
-            SimpleIoc.Default.Register<MasterViewModel>();
+            SimpleIoc.Default.Register<MasterDeviceViewModel>();
             SimpleIoc.Default.Register<SettingsViewModel>();
+            SimpleIoc.Default.Register<SlaveDeviceViewModel>();
+            SimpleIoc.Default.Register<SlaveViewModel>();
         }
 
-        public MasterViewModel Master
+        public MasterDeviceViewModel MasterDevice
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<MasterViewModel>();
+                return ServiceLocator.Current.GetInstance<MasterDeviceViewModel>();
             }
         }
 
@@ -60,6 +62,16 @@ namespace Com2Com.ViewModel
             {
                 return ServiceLocator.Current.GetInstance<SettingsViewModel>();
             }
+        }
+
+        public SlaveDeviceViewModel SlaveDevice
+        {
+            get { return ServiceLocator.Current.GetInstance<SlaveDeviceViewModel>(); }
+        }
+
+        public SlaveViewModel Slave
+        {
+            get { return ServiceLocator.Current.GetInstance<SlaveViewModel>(); }
         }
 
         public static void Cleanup()

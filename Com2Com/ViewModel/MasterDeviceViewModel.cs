@@ -18,14 +18,14 @@ namespace Com2Com.ViewModel
     /// See http://www.galasoft.ch/mvvm
     /// </para>
     /// </summary>
-    public class MasterViewModel : ViewModelBase
+    public class MasterDeviceViewModel : ViewModelBase
     {
 
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        public MasterViewModel()
+        public MasterDeviceViewModel()
         {
             CreateNavigateToSettingsCommand();
         }
