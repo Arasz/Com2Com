@@ -42,17 +42,26 @@ namespace Com2Com.ViewModel
             ////    SimpleIoc.Default.Register<IDataService, DataService>();
             ////}
 
-            SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<MasterViewModel>();
+            SimpleIoc.Default.Register<SettingsViewModel>();
         }
 
-        public MainViewModel Main
+        public MasterViewModel Master
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<MainViewModel>();
+                return ServiceLocator.Current.GetInstance<MasterViewModel>();
             }
         }
-        
+
+        public SettingsViewModel Settings
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<SettingsViewModel>();
+            }
+        }
+
         public static void Cleanup()
         {
             // TODO Clear the ViewModels
