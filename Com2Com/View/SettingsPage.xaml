@@ -10,6 +10,6 @@
       DataContext="{Binding Source={StaticResource Locator}, Path=Settings}">
 
     <Grid>
-        <Button HorizontalAlignment="Stretch" Content="Settings" />
+        <Button HorizontalAlignment="Stretch" Content="Settings" Command="{Binding NavigateToMainPage}" />
     </Grid>
 </Page>

@@ -28,7 +28,7 @@ namespace Com2Com.ViewModel
 
         private void ExecuteNavigateToMainPageCommand()
         {
-            NavigationHelper.NavigateTo<MasterPage>();
+            NavigationHelper.NavigateTo<MasterDevicePage>();
         }
         #endregion
     }

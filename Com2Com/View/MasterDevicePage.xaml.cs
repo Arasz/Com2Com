@@ -18,9 +18,9 @@ namespace Com2Com.View
     /// <summary>
     /// Interaction logic for MainPage.xaml
     /// </summary>
-    public partial class MasterPage : Page
+    public partial class MasterDevicePage : Page
     {
-        public MasterPage()
+        public MasterDevicePage()
         {
             InitializeComponent();
         }

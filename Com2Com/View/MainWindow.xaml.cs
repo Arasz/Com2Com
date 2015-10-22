@@ -26,10 +26,10 @@ namespace Com2Com
         {
             InitializeComponent();
             NavigationHelper.NavigationFrame = mainFrame;
-            NavigationHelper.RegisterPage<MasterPage>(new MasterPage());
-            NavigationHelper.RegisterPage<SettingsPage>(new SettingsPage());
+            NavigationHelper.RegisterPage<MasterDevicePage>();
+            NavigationHelper.RegisterPage<SettingsPage>();
 
-            NavigationHelper.NavigateTo<MasterPage>();
+            NavigationHelper.NavigateTo<MasterDevicePage>();
         }
     }
 }
