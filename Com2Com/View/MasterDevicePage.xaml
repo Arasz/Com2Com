@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Com2Com.View"
       xmlns:system="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d" 
-      d:DesignHeight="300" d:DesignWidth="300"
+      d:DesignHeight="200" d:DesignWidth="300"
       DataContext="{Binding Source={StaticResource Locator}, Path=MasterDevice}"
       Title="MasterPage" Background="Azure">
 

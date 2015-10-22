@@ -18,8 +18,28 @@ namespace Com2Com.Common
 
         //private static SimpleIoc _pagesIoc = new SimpleIoc();
 
-        public static  Frame NavigationFrame { get; set; }
+        private static Frame _navigationFrame = App.Current.MainWindow.Content as Frame;
+        /// <summary>
+        /// 
+        /// </summary>
+        public static Frame NavigationFrame
+        {
+            get
+            {
+                if (_navigationFrame == null)
+                    _navigationFrame = new Frame();
+                return _navigationFrame;
+            }
 
+            set
+            { _navigationFrame = value; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="createInstantly"></param>
         public static void RegisterPage<T>(bool createInstantly = true) where T : Page
         {
             Type navigationType = typeof(T);
@@ -29,6 +49,10 @@ namespace Com2Com.Common
                 _registeredPages[navigationType.ToString()] = null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         public static void NavigateTo<T>() where T : Page
         {
             string key = typeof(T).ToString();

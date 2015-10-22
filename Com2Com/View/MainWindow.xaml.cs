@@ -25,7 +25,7 @@ namespace Com2Com
         public MainWindow()
         {
             InitializeComponent();
-            NavigationHelper.NavigationFrame = mainFrame;
+            //NavigationHelper.NavigationFrame = mainFrame;
             NavigationHelper.RegisterPage<MasterDevicePage>();
             NavigationHelper.RegisterPage<SettingsPage>();
 
