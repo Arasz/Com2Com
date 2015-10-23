@@ -38,11 +38,11 @@ namespace Com2Com.Model
     public abstract class ComDevice : IDisposable
     {
 
-        protected SerialPort _inSerialPort;
-        protected SerialPort _outSerialPort;
+        protected SerialPort _serialPort;
+        protected SettingsModel _portSettings;
 
-        public string OutPortName { get; set; } = "";
-        public string InPortName { get; set; } = "";
+
+        public string PortName { get; set; } = "";
         public int BaudRate { get; set; } = 9600;
         public Parity Parity { get; set; } = Parity.None;
         public StopBits StopBits { get; set; } = StopBits.One;
@@ -53,12 +53,12 @@ namespace Com2Com.Model
         /// </summary>
         public void Connect()
         {
-            if (!string.IsNullOrEmpty(InPortName))
+            if (!string.IsNullOrEmpty(PortName))
             {
-                ConfigureSerialPort(ref _inSerialPort, InPortName);
+                ConfigureSerialPort(ref _serialPort, PortName);
                 try
                 {
-                    _inSerialPort.Open();
+                    _serialPort.Open();
                 }
                 #region CatchExceptions
                 catch (IOException ioex)
@@ -66,7 +66,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(ioex.Message, ioex)
                     {
                         PortType = "In",
-                        PortName = InPortName,
+                        PortName = PortName,
                         Cause = "The port is in an invalid state. (Port parameters may not be correct)"
                     };
 
@@ -76,7 +76,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(argoorex.Message, argoorex)
                     {
                         PortType = "In",
-                        PortName = InPortName,
+                        PortName = PortName,
                         Cause = "One or more of the properties for this instance are invalid. (For example wrong parity value)"
                     };
                 }
@@ -85,7 +85,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(argex.Message, argex)
                     {
                         PortType = "In",
-                        PortName = InPortName,
+                        PortName = PortName,
                         Cause = "The port name does not begin with COM."
                     };
                 }
@@ -94,7 +94,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(unaccex.Message, unaccex)
                     {
                         PortType = "In",
-                        PortName = InPortName,
+                        PortName = PortName,
                         Cause = "Access is denied to the port."
                     };
                 }
@@ -103,68 +103,16 @@ namespace Com2Com.Model
                     throw new ComDeviceException(invopex.Message, invopex)
                     {
                         PortType = "In",
-                        PortName = InPortName,
+                        PortName = PortName,
                         Cause = "The specified port on the current instance of the SerialPort is already open."
                     };
                 }
-                #endregion
-            }
-            if (!string.IsNullOrEmpty(OutPortName))
-            {
-                ConfigureSerialPort(ref _outSerialPort, OutPortName);
-                try
+                finally
                 {
-                    _outSerialPort.Open();
-                }
-                #region CatchExceptions
-                catch (IOException ioex)
-                {
-                    throw new ComDeviceException(ioex.Message, ioex)
-                    {
-                        PortType = "Out",
-                        PortName = OutPortName,
-                        Cause = "The port is in an invalid state. (Port parameters may not be correct)"
-                    };
-
-                }
-                catch (ArgumentOutOfRangeException argoorex)
-                {
-                    throw new ComDeviceException(argoorex.Message, argoorex)
-                    {
-                        PortType = "Out",
-                        PortName = OutPortName,
-                        Cause = "One or more of the properties for this instance are invalid. (For example wrong parity value)"
-                    };
-                }
-                catch (ArgumentException argex)
-                {
-                    throw new ComDeviceException(argex.Message, argex)
-                    {
-                        PortType = "Out",
-                        PortName = OutPortName,
-                        Cause = "The port name does not begin with COM."
-                    };
-                }
-                catch (UnauthorizedAccessException unaccex)
-                {
-                    throw new ComDeviceException(unaccex.Message, unaccex)
-                    {
-                        PortType = "Out",
-                        PortName = OutPortName,
-                        Cause = "Access is denied to the port."
-                    };
-                }
-                catch (InvalidOperationException invopex)
-                {
-                    throw new ComDeviceException(invopex.Message, invopex)
-                    {
-                        PortType = "Out",
-                        PortName = OutPortName,
-                        Cause = "The specified port on the current instance of the SerialPort is already open."
-                    };
+                    if (!_serialPort.IsOpen)
+                        Dispose();
                 }
                 #endregion
-
             }
         }
 
@@ -173,34 +121,18 @@ namespace Com2Com.Model
         /// </summary>
         public void Disconnect()
         {
-            if (_inSerialPort?.IsOpen ?? false) // if serial port is != null and isOpen
+            if (_serialPort?.IsOpen ?? false) // if serial port is != null and isOpen
             {
                 try
                 {
-                    _inSerialPort.Close();
+                    _serialPort.Close();
                 }
                 catch (IOException ioex)
                 {
                     throw new ComDeviceException(ioex.Message, ioex)
                     {
-                        PortName = InPortName,
+                        PortName = PortName,
                         PortType = "IN",
-                        Cause = "The port is in an invalid state. (Port parameters may not be correct)",
-                    };
-                }
-            }
-            if (_outSerialPort?.IsOpen ?? false)
-            {
-                try
-                {
-                    _outSerialPort.Close();
-                }
-                catch (IOException ioex)
-                {
-                    throw new ComDeviceException(ioex.Message, ioex)
-                    {
-                        PortName = OutPortName,
-                        PortType = "OUT",
                         Cause = "The port is in an invalid state. (Port parameters may not be correct)",
                     };
                 }
@@ -223,7 +155,7 @@ namespace Com2Com.Model
             else
             {
                 if (serialPort.IsOpen)
-                    serialPort.Close();
+                    Disconnect();
 
                 serialPort.PortName = name;
                 serialPort.Parity = Parity;
@@ -250,12 +182,9 @@ namespace Com2Com.Model
                 if (disposing == true)
                 {
                 // TODO: Think about closing port before disposing 
-                    _inSerialPort?.Dispose();
-                    _outSerialPort?.Dispose();
+                    _serialPort?.Dispose();
 
-                    _inSerialPort = null;
-                    _outSerialPort = null;
-
+                    _serialPort = null;
                 }
                 else
                 {

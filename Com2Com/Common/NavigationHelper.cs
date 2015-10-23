@@ -72,5 +72,29 @@ namespace Com2Com.Common
                 throw new IndexOutOfRangeException("Page isn't registered. Register page in MainWindow.cs");
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public static void NavigateTo<T>(object param) where T : Page
+        {
+            string key = typeof(T).ToString();
+            if (_registeredPages.ContainsKey(key))
+            {
+                Page navigationPage = _registeredPages[key];
+                if (navigationPage != null)
+                    NavigationFrame.Navigate(_registeredPages[key], param);
+                else
+                {
+                    _registeredPages[key] = (Page)Activator.CreateInstance(Type.GetType(key));
+                    NavigationFrame.Navigate(_registeredPages[key], param);
+                }
+            }
+            else
+            {
+                throw new IndexOutOfRangeException("Page isn't registered. Register page in MainWindow.cs");
+            }
+        }
     }
 }

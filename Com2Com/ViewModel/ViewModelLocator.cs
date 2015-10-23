@@ -44,7 +44,6 @@ namespace Com2Com.ViewModel
 
             SimpleIoc.Default.Register<MasterDeviceViewModel>();
             SimpleIoc.Default.Register<SettingsViewModel>();
-            SimpleIoc.Default.Register<SlaveDeviceViewModel>();
             SimpleIoc.Default.Register<SlaveViewModel>();
         }
 
@@ -62,11 +61,6 @@ namespace Com2Com.ViewModel
             {
                 return ServiceLocator.Current.GetInstance<SettingsViewModel>();
             }
-        }
-
-        public SlaveDeviceViewModel SlaveDevice
-        {
-            get { return ServiceLocator.Current.GetInstance<SlaveDeviceViewModel>(); }
         }
 
         public SlaveViewModel Slave
