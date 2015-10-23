@@ -9,7 +9,73 @@
       Title="SettingsPage"
       DataContext="{Binding Source={StaticResource Locator}, Path=Settings}">
 
-    <Grid>
-        <Button HorizontalAlignment="Stretch" Content="Settings" Command="{Binding NavigateToMainPage}" />
+    <Grid Background="White">
+        <!--Button HorizontalAlignment="Stretch" Content="Settings" Command="{Binding NavigateToMainPage}" /-->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+
+        <StackPanel Orientation="Horizontal"  Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" 
+                   VerticalAlignment="Center">
+            <TextBlock Text="ID: "/>
+            <TextBox Margin="10,0,0,0" Text="000"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+            <Button Content="Connect" Margin="10,0"/>
+            <Button Content="Back" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"  Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" 
+                   VerticalAlignment="Center">
+            <TextBlock Text="Baud rate: "/>
+            <TextBox Margin="10,0,0,0" Text="000"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"  Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" 
+                   VerticalAlignment="Center">
+            <TextBlock Text="Parity: "/>
+            <ComboBox Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"  Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" 
+                   VerticalAlignment="Center">
+            <TextBlock Text="Stop bits: "/>
+            <ComboBox Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"  Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" 
+                   VerticalAlignment="Center">
+            <TextBlock Text="Data bits: "/>
+            <ComboBox Margin="10,0,0,0"/>
+        </StackPanel>
+        
+        <RadioButton Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center"
+                     VerticalAlignment="Center" Content="Slave"/>
+        
+        <RadioButton Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center"
+                     VerticalAlignment="Center" Content="Master"/>
+
+        <StackPanel Orientation="Horizontal"  Grid.Row="4" Grid.Column="0" HorizontalAlignment="Center" 
+                   VerticalAlignment="Center">
+            <TextBlock Text="Out port: "/>
+            <ComboBox Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"  Grid.Row="4" Grid.Column="1" HorizontalAlignment="Center" 
+                   VerticalAlignment="Center">
+            <TextBlock Text="In port: "/>
+            <ComboBox Margin="10,0,0,0"/>
+        </StackPanel>
     </Grid>
 </Page>

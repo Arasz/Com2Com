@@ -8,7 +8,7 @@
       mc:Ignorable="d" 
       d:DesignHeight="200" d:DesignWidth="300"
       DataContext="{Binding Source={StaticResource Locator}, Path=MasterDevice}"
-      Title="MasterPage" Background="Azure">
+      Title="MasterPage" >
 
     <Page.Resources>
         <ResourceDictionary>
@@ -28,27 +28,19 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid Margin="20,0,20,0">
+    <Grid Margin="20,0,20,0" Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" 
-                    Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Stretch">
-            <TextBlock Text="{StaticResource pageName}" Style="{StaticResource pageTitleStyle}"/>
-        </StackPanel>
+         <TextBlock Text="{StaticResource pageName}" Style="{StaticResource pageTitleStyle}"/>
         
-        <TextBlock HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Margin="0,4">
-                <Run Text="{StaticResource masterName}"/>
-                <Run Text=" imie"/>
-            </TextBlock>
-        <TextBlock HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1" Margin="0,4">
+        <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Run Text="{StaticResource masterID}"/>
                 <Run Text="ID"/>
         </TextBlock>
@@ -59,6 +51,6 @@
         </StackPanel>
         
         <Button Grid.Row="2" Grid.Column="1" Content="{StaticResource settingsButton}" 
-                Command="{Binding NavigateToSettings}"/>
+                Command="{Binding NavigateToSettings}" Margin="40,62"/>
     </Grid>
 </Page>
