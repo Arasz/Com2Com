@@ -32,9 +32,12 @@ namespace Com2Com.ViewModel
         /// </summary>
         public MasterDeviceViewModel()
         {
+            // Messaging
             MessengerInstance = Messenger.Default;
 
             MessengerInstance.Register<SlaveDataMessage>(this, HandleSlaveDataMessage);
+            MessengerInstance.Register<SerialPortSettingsMessage>(this, HandleSerialPortSettingsMessage);
+
             // Commands
             CreateNavigateToSettingsCommand();
             CreateNavigateToSlaveCommand();
@@ -42,6 +45,11 @@ namespace Com2Com.ViewModel
 
         #region Messages 
         private void HandleSlaveDataMessage(SlaveDataMessage message)
+        {
+            //TODO: IMPLEMNT HandleSlaveDataMessage
+        }
+
+        private void HandleSerialPortSettingsMessage(SerialPortSettingsMessage message)
         {
             //TODO: IMPLEMNT HandleSlaveDataMessage
         }
@@ -68,6 +76,7 @@ namespace Com2Com.ViewModel
         public ICommand NavigateToSlave { get; private set; }
         private void ExecuteNavigateToSlaveCommand()
         {
+            MessengerInstance.Send(new SlaveDataMessage(new Model.SlaveModel()));
             NavigationHelper.NavigateTo<SlavePage>(_slaves[0]);
         }
         private void CreateNavigateToSlaveCommand()

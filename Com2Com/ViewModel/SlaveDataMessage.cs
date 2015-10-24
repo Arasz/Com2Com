@@ -10,5 +10,10 @@ namespace Com2Com.ViewModel
     class SlaveDataMessage
     {
         public SlaveModel SlaveModel { get; set; }
+
+        public SlaveDataMessage(SlaveModel slaveModel)
+        {
+            SlaveModel = slaveModel;
+        }
     }
 }

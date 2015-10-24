@@ -10,9 +10,9 @@ namespace Com2Com.Model
     {
         public List<bool> DigitalValues { get; set; } = new List<bool>();
 
-        public int AnalogValue { get; set; } = 0;
+        public int AnalogValue  = 0;
 
-        public int SlaveID { get; set; } = 255;
+        public int SlaveID  = 255;
 
     }
 }

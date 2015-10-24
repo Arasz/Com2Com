@@ -12,9 +12,10 @@
   See http://www.galasoft.ch/mvvm
 */
 
-using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Views;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
+using System;
 
 namespace Com2Com.ViewModel
 {
@@ -72,6 +73,12 @@ namespace Com2Com.ViewModel
         {
             // TODO Clear the ViewModels
             
+        }
+
+        private INavigationService CreateNavigationService()
+        {
+            // TODO: Implement navigation service based on : http://www.c-sharpcorner.com/UploadFile/3789b7/modern-ui-for-wpf-application-by-example-navigationservice/
+            throw new NotImplementedException();
         }
     }
 }

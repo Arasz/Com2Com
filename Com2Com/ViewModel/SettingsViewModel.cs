@@ -3,6 +3,7 @@ using Com2Com.Model;
 using Com2Com.View;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
+using GalaSoft.MvvmLight.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,16 +19,6 @@ namespace Com2Com.ViewModel
     {
 
         private SettingsModel _settingsModel;
-
-        // TODO : Implement information exchange with message mechanics.
-        public SettingsModel SettingsModel
-        {
-            get
-            {
-                return _settingsModel;
-            }
-
-        }
 
         public ObservableCollection<string> PortNames { get; private set; }
 
@@ -65,6 +56,8 @@ namespace Com2Com.ViewModel
 
         public SettingsViewModel()
         {
+            MessengerInstance = Messenger.Default;
+
             _settingsModel = new SettingsModel();
             PortNames = new ObservableCollection<string>(SerialPort.GetPortNames());
             ParityCollection = new ObservableCollection<string>(Enum.GetNames(typeof(Parity)));
@@ -88,7 +81,8 @@ namespace Com2Com.ViewModel
 
         private void ExecuteNavigateToMainPageCommand(SettingsModel portSettings)
         {
-            NavigationHelper.NavigateTo<MasterDevicePage>(portSettings);
+            MessengerInstance.Send(new SerialPortSettingsMessage(_settingsModel));
+            NavigationHelper.NavigateTo<MasterDevicePage>();
         }
 
         /// <summary>

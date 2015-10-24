@@ -5,11 +5,31 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Com2Com.View"
       mc:Ignorable="d" 
+      xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+      xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
       d:DesignHeight="200" d:DesignWidth="300"
-      Title="SlavePage"
+      Title="SlavePage" Name="slavePage"
       DataContext="{Binding Source={StaticResource Locator}, Path=Slave}"
       >
 
+    <Page.Resources>
+        <ResourceDictionary>
+            <local:BoolToBrushConverter x:Key="boolToBrushConverter"/>
+            
+            <!--Define items container style-->
+            <Style x:Key="contentPresenterStyle" TargetType="ContentPresenter">
+                <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+            </Style>
+            
+            <DataTemplate x:Key="digitalRepresentationDataTemplate">
+                <Rectangle Width="{Binding Width}" Height="{Binding Height}" 
+                                   Fill="{Binding State, Converter={StaticResource boolToBrushConverter}, Mode=OneWay}"
+                                   Stroke="Black" StrokeThickness="1" StrokeLineJoin="Round"/>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Page.Resources>
+    
     <Grid Style="{StaticResource gridStyle}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -24,28 +44,29 @@
         <TextBlock Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Left"
                   Style="{StaticResource pageTitleStyle}" Text="{StaticResource slavePageName}"/>
 
-        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Margin="0, 10">
+        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Margin="0, 10" ClipToBounds="True">
             <TextBlock Text="Digital I/O" HorizontalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Margin="0,10" HorizontalAlignment="Center">
-                <Rectangle Height="20" Width="20" Fill="Red" Margin="22,0,4.5,0"
-                           StrokeThickness="1" Stroke="Black"/>
-                <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,4.5,0"
-                           StrokeThickness="1" Stroke="Black"/>
-                <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,4.5,0"
-                           StrokeThickness="1" Stroke="Black"/>
-                <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,20,0"
-                           StrokeThickness="1" Stroke="Black"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,10" HorizontalAlignment="Center">
-                <Rectangle Height="20" Width="20" Fill="Red" Margin="22,0,4.5,0"
-                           StrokeThickness="1" Stroke="Black"/>
-                <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,4.5,0"
-                           StrokeThickness="1" Stroke="Black"/>
-                <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,4.5,0"
-                           StrokeThickness="1" Stroke="Black"/>
-                <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,20,0"
-                           StrokeThickness="1" Stroke="Black"/>
-            </StackPanel>
+            
+            <!--Define my own specific items control-->
+            <ItemsControl ItemsSource="{Binding DigitalIoCollection}" 
+                          ItemContainerStyle="{StaticResource contentPresenterStyle}"
+                          ItemTemplate="{StaticResource digitalRepresentationDataTemplate}"
+                          Margin="10,8,110,8" HorizontalAlignment="Center"
+                          MaxWidth="300" 
+                          Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=StackPanel}, Path=Width}">
+                <!--Items panel used to display items-->
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Name="canvas"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <cmd:EventToCommand Command="{Binding ChangeDigitalIoState}"
+                                            PassEventArgsToCommand="True" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ItemsControl>
         </StackPanel>
 
 
@@ -63,8 +84,11 @@
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical">
-            <TextBlock Text="{StaticResource strID}" Style="{StaticResource gridTextStyle}"/>
-            <TextBlock Text="LAST MESSAGEs" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+            <TextBlock Style="{StaticResource gridTextStyle}">
+                <Run Text="{StaticResource strID}"/>
+                <Run Text="{Binding SlaveId, Mode=OneWay}"/>
+            </TextBlock>
+            <TextBlock Text="{Binding LastMessage, Mode=OneWay}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                        Style="{StaticResource gridTextStyle}"/>
         </StackPanel>
 

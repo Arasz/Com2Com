@@ -82,12 +82,14 @@
     <Compile Include="Model\ProtocolFrame.cs" />
     <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\SlaveModel.cs" />
+    <Compile Include="ViewModel\SerialPortSettingsMessage.cs" />
     <Compile Include="ViewModel\SlaveDataMessage.cs" />
     <Compile Include="ViewModel\StringToBaudrateConverter.cs" />
     <Compile Include="ViewModel\MasterDeviceViewModel.cs" />
     <Compile Include="ViewModel\SettingsViewModel.cs" />
     <Compile Include="ViewModel\SlaveViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="ViewModel\BoolToBrushConverter.cs" />
     <Compile Include="View\MasterDevicePage.xaml.cs">
       <DependentUpon>MasterDevicePage.xaml</DependentUpon>
     </Compile>

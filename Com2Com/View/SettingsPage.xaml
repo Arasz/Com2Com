@@ -42,7 +42,7 @@
             Text="{StaticResource settingsPageName}" Style="{StaticResource pageTitleStyle}"/>
         
         <Button Grid.Row="0" Grid.Column="3" Style="{StaticResource backButtonStyle}" 
-                Command="{Binding NavigateToMainPage}" CommandParameter="{Binding SettingsModel}"/>
+                Command="{Binding NavigateToMainPage}"/>
                    
         <TextBlock Grid.Row="1" Grid.Column="0" Text="{StaticResource strPortName}"
                    Style="{StaticResource gridTextStyle}"/>
