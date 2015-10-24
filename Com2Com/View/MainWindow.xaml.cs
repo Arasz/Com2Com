@@ -28,6 +28,7 @@ namespace Com2Com
             //NavigationHelper.NavigationFrame = mainFrame;
             NavigationHelper.RegisterPage<MasterDevicePage>();
             NavigationHelper.RegisterPage<SettingsPage>();
+            NavigationHelper.RegisterPage<SlavePage>();
 
             NavigationHelper.NavigateTo<MasterDevicePage>();
         }

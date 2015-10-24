@@ -19,6 +19,7 @@ namespace Com2Com.ViewModel
 
         private SettingsModel _settingsModel;
 
+        // TODO : Implement information exchange with message mechanics.
         public SettingsModel SettingsModel
         {
             get
@@ -71,9 +72,13 @@ namespace Com2Com.ViewModel
             DataBitsCollection = new ObservableCollection<string>(Enum.GetNames(typeof(DataBits)));
 
             CreateNavigateToMainPageCommand();
+            CreateRefreshSerialPortsCommand();
         }
 
         #region Commands
+        /// <summary>
+        /// 
+        /// </summary>
         public ICommand NavigateToMainPage { get; private set; }
 
         private void CreateNavigateToMainPageCommand()
@@ -84,6 +89,23 @@ namespace Com2Com.ViewModel
         private void ExecuteNavigateToMainPageCommand(SettingsModel portSettings)
         {
             NavigationHelper.NavigateTo<MasterDevicePage>(portSettings);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ICommand RefreshSerialPorts { get; private set; }
+
+        private void ExecuteRefreshSerialPortsCommand()
+        {
+            PortNames.Clear();
+            foreach (string portName in SerialPort.GetPortNames())
+                PortNames.Add(portName);
+        }
+
+        private void CreateRefreshSerialPortsCommand()
+        {
+            RefreshSerialPorts = new RelayCommand(ExecuteRefreshSerialPortsCommand);
         }
         #endregion
     }

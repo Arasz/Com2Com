@@ -6,31 +6,27 @@
       xmlns:local="clr-namespace:Com2Com.View"
       mc:Ignorable="d" 
       d:DesignHeight="200" d:DesignWidth="300"
-      Title="SlavePage" >
+      Title="SlavePage"
+      DataContext="{Binding Source={StaticResource Locator}, Path=Slave}"
+      >
 
-    <Page.Resources>
-        <ResourceDictionary Source="ViewResoruces.xaml"/>
-    </Page.Resources>
-
-    <Grid Background="White">
+    <Grid Style="{StaticResource gridStyle}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0,4,0,0" HorizontalAlignment="Center">
-            <Run>Slave id: </Run>
-            <Run Text="0000"/>
-        </TextBlock>
+        <TextBlock Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Left"
+                  Style="{StaticResource pageTitleStyle}" Text="{StaticResource slavePageName}"/>
 
         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Margin="0, 10">
             <TextBlock Text="Digital I/O" HorizontalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Margin="0,10">
+            <StackPanel Orientation="Horizontal" Margin="0,10" HorizontalAlignment="Center">
                 <Rectangle Height="20" Width="20" Fill="Red" Margin="22,0,4.5,0"
                            StrokeThickness="1" Stroke="Black"/>
                 <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,4.5,0"
@@ -40,7 +36,7 @@
                 <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,20,0"
                            StrokeThickness="1" Stroke="Black"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,10">
+            <StackPanel Orientation="Horizontal" Margin="0,10" HorizontalAlignment="Center">
                 <Rectangle Height="20" Width="20" Fill="Red" Margin="22,0,4.5,0"
                            StrokeThickness="1" Stroke="Black"/>
                 <Rectangle Height="20" Width="20" Fill="Red" Margin="4.5,0,4.5,0"
@@ -59,14 +55,17 @@
             <Slider Margin="10,20,10,10"/>
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center">
-            <Button Content="←" Margin="10,10" />
-            <Button Content="Set" Margin="10,10"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Style="{StaticResource backButtonStyle}" Margin="10,0" Command="{Binding NavigateToMasterPage}"/>
+            <Button Content="Send" Style="{StaticResource defaultButtonStyle}" Command="{Binding Send}"
+                    Margin="10,0"/>
         </StackPanel>
 
-        <StackPanel Orientation="Vertical" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center">
-            <CheckBox Content ="Turn on slave" Margin="10,10"/>
-            <TextBlock Text="slave status" Margin="10,5"/>
+        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical">
+            <TextBlock Text="{StaticResource strID}" Style="{StaticResource gridTextStyle}"/>
+            <TextBlock Text="LAST MESSAGEs" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                       Style="{StaticResource gridTextStyle}"/>
         </StackPanel>
 
     </Grid>

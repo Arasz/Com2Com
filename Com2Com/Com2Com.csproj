@@ -77,9 +77,12 @@
     </ApplicationDefinition>
     <Compile Include="Common\NavigationHelper.cs" />
     <Compile Include="Model\ComDevice.cs" />
+    <Compile Include="Model\CrcHelper.cs" />
     <Compile Include="Model\MasterDeviceModel.cs" />
+    <Compile Include="Model\ProtocolFrame.cs" />
     <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\SlaveModel.cs" />
+    <Compile Include="ViewModel\SlaveDataMessage.cs" />
     <Compile Include="ViewModel\StringToBaudrateConverter.cs" />
     <Compile Include="ViewModel\MasterDeviceViewModel.cs" />
     <Compile Include="ViewModel\SettingsViewModel.cs" />
@@ -115,10 +118,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\SlavePage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\ViewResoruces.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

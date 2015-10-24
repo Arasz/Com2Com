@@ -5,12 +5,69 @@
              StartupUri="View/MainWindow.xaml" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              d1p1:Ignorable="d" 
-             xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006">
+             xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             >
     
   <Application.Resources>
     <ResourceDictionary>
       <vm:ViewModelLocator x:Key="Locator" d:IsDataSource="True" xmlns:vm="clr-namespace:Com2Com.ViewModel" />
-    </ResourceDictionary>
+
+            <system:String x:Key="mainPageName">Master</system:String>
+            <system:String x:Key="settingsPageName">Settings</system:String>
+            <system:String x:Key="slavePageName">Slave</system:String>
+            <system:String x:Key="strID">ID:</system:String>
+            <system:String x:Key="strSlaveList">Slave list:</system:String>
+            <system:String x:Key="strSettingsButton">Settings</system:String>
+            <system:String x:Key="strRefreshSlavesButton">Refresh</system:String>
+            <system:String x:Key="strBaudrate">Baud rate:</system:String>
+            <system:String x:Key="strParity">Parity:</system:String>
+            <system:String x:Key="strDataBits">Data bits:</system:String>
+            <system:String x:Key="strStopBits">Stop bits:</system:String>
+            <system:String x:Key="strPortName">Port name:</system:String>
+
+
+            <Style x:Key="pageTitleStyle" TargetType="TextBlock" >
+                <Setter Property="FontSize" Value="24"/>
+                <Setter Property="FontStyle" Value="Normal"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <Style x:Key="gridStyle" TargetType="Grid">
+                <Setter Property="Margin" Value="20,0,20,0"/>
+                <Setter Property="Background" Value="White"/>
+            </Style>
+
+            <Style x:Key="comboBoxStyle" TargetType="ComboBox">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="0,10"/>
+                <Setter Property="IsEditable" Value="False"/>
+            </Style>
+
+            <Style x:Key="backButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="Content" Value="Back"/>
+                <Setter Property="BorderThickness" Value="1"/>
+            </Style>
+
+            <Style x:Key="defaultButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="BorderThickness" Value="1"/>
+            </Style>
+
+            <Style x:Key="gridTextStyle" TargetType="TextBlock">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="2.5,0" />
+            </Style>
+
+        </ResourceDictionary>
   </Application.Resources>
     
 </Application>

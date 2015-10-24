@@ -3,6 +3,8 @@ using GalaSoft.MvvmLight.Command;
 using System.Windows.Input;
 using Com2Com.Common;
 using Com2Com.View;
+using System.Collections.ObjectModel;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace Com2Com.ViewModel
 {
@@ -20,16 +22,30 @@ namespace Com2Com.ViewModel
     /// </summary>
     public class MasterDeviceViewModel : ViewModelBase
     {
+        private ObservableCollection<string> _slaves = new ObservableCollection<string> { "dummmySlave" };
 
+        public ObservableCollection<string> SlaveCollection
+        { get { return _slaves; } }
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         public MasterDeviceViewModel()
         {
+            MessengerInstance = Messenger.Default;
+
+            MessengerInstance.Register<SlaveDataMessage>(this, HandleSlaveDataMessage);
+            // Commands
             CreateNavigateToSettingsCommand();
+            CreateNavigateToSlaveCommand();
         }
 
+        #region Messages 
+        private void HandleSlaveDataMessage(SlaveDataMessage message)
+        {
+            //TODO: IMPLEMNT HandleSlaveDataMessage
+        }
+        #endregion
 
         #region Commands
         /// <summary>
@@ -41,12 +57,22 @@ namespace Com2Com.ViewModel
         }
         private void CreateNavigateToSettingsCommand()
         {
-            NavigateToSettings = new RelayCommand(ExecuteNavigateToSettings);
+            NavigateToSettings = new RelayCommand(ExecuteNavigateToSettingsCommand);
  
         }
-        private void ExecuteNavigateToSettings()
+        private void ExecuteNavigateToSettingsCommand()
         {
             NavigationHelper.NavigateTo<SettingsPage>();
+        }
+
+        public ICommand NavigateToSlave { get; private set; }
+        private void ExecuteNavigateToSlaveCommand()
+        {
+            NavigationHelper.NavigateTo<SlavePage>(_slaves[0]);
+        }
+        private void CreateNavigateToSlaveCommand()
+        {
+            NavigateToSlave = new RelayCommand(ExecuteNavigateToSlaveCommand);
         }
         #endregion 
     }

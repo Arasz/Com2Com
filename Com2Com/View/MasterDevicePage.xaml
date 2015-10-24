@@ -5,13 +5,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Com2Com.View"
       mc:Ignorable="d" 
+      xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+      xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
       d:DesignHeight="200" d:DesignWidth="300"
       DataContext="{Binding Source={StaticResource Locator}, Path=MasterDevice}"
       Title="MasterPage" >
 
-    <Page.Resources>
-        <ResourceDictionary Source="ViewResoruces.xaml"/>
-    </Page.Resources>
+
+
 
     <Grid Style="{StaticResource gridStyle}">
         <Grid.RowDefinitions>
@@ -24,7 +25,13 @@
 
         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Vertical">
             <TextBlock Text="{StaticResource strSlaveList}" Margin="0,5"/>
-            <ListView MinHeight="80" />
+            <ListView MinHeight="80" ItemsSource="{Binding SlaveCollection, Mode=OneWay}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <cmd:EventToCommand Command="{Binding NavigateToSlave}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ListView>
             <Button Content="{StaticResource strRefreshSlavesButton}" Margin="0,10"/>
             <Button Grid.Row="2" Grid.Column="1" Content="{StaticResource strSettingsButton}" 
                 Command="{Binding NavigateToSettings}" />

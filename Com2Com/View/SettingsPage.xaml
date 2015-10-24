@@ -6,20 +6,21 @@
       xmlns:local="clr-namespace:Com2Com.View"
       xmlns:viewmodel="clr-namespace:Com2Com.ViewModel"
       mc:Ignorable="d" 
+      xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+      xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
       d:DesignHeight="200" d:DesignWidth="300"
       Title="SettingsPage"
-      DataContext="{Binding Source={StaticResource Locator}, Path=Settings}">
+      DataContext="{Binding Source={StaticResource Locator}, Path=Settings}"
+      >
 
     <Page.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="ViewResoruces.xaml"/>
-                <ResourceDictionary>
-                    <viewmodel:StringToBaudrateConverter x:Key="strToBaudConv"/>
-                </ResourceDictionary>
-            </ResourceDictionary.MergedDictionaries>
+           <viewmodel:StringToBaudrateConverter x:Key="strToBaudConv"/>
         </ResourceDictionary>
     </Page.Resources>
+
+    
+    <!-- Event triggers -->
 
 
     <Grid Style="{StaticResource gridStyle}"> 
@@ -46,9 +47,15 @@
         <TextBlock Grid.Row="1" Grid.Column="0" Text="{StaticResource strPortName}"
                    Style="{StaticResource gridTextStyle}"/>
         <ComboBox ItemsSource="{Binding PortNames}" Grid.Row="1" Grid.Column="1" SelectedItem="{Binding PortName}"
-                  Style="{StaticResource comboBoxStyle}"/>
-        
-        <TextBlock Grid.Row="2" Grid.Column="0" Text="{StaticResource strParity}"
+                  Style="{StaticResource comboBoxStyle}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="DropDownOpened">
+                    <cmd:EventToCommand Command="{Binding RefreshSerialPorts}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </ComboBox>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="{StaticResource strParity}"
                    Style="{StaticResource gridTextStyle}"/>
         <ComboBox ItemsSource="{Binding ParityCollection}" Grid.Row="2" Grid.Column="1" SelectedItem ="{Binding Parity}"
                   Style="{StaticResource comboBoxStyle}"/>
