@@ -14,12 +14,21 @@ using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.ComponentModel;
 
 namespace Com2Com.ViewModel
 {
-    public class LightSymbol
+    public class LightSymbol : INotifyPropertyChanged
     {
         private Rect _baseRectangel = new Rect(0,0,20,20);
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public double X
         {
@@ -42,7 +51,8 @@ namespace Com2Com.ViewModel
             set { _baseRectangel.Height = value; }
         }
 
-        public bool State { get; set; }
+        private bool _state = false;
+        public bool State { get { return _state; } set { _state = value; OnPropertyChanged(nameof(State)); } }
 
         public bool Contains(Point point)
         {
@@ -52,40 +62,67 @@ namespace Com2Com.ViewModel
 
     public class SlaveViewModel : ViewModelBase
     {
-        private SlaveModel _slaveModel;
+        public ObservableCollection<LightSymbol> DigitalIoCollection { get; private set; }
 
-        public ObservableCollection<Rect> DigitalIoCollection { get; private set; }
+        private double _analogValue = 0;
+        /// <summary>
+        /// 
+        /// </summary>
+        public double AnalogValue
+        {
+            get { return _analogValue; }
+            set { Set(nameof(AnalogValue), ref _analogValue, value); }
+        }
 
         private int _slaveId = 0;
-        public int SlaveId { get { return _slaveId; } private set { Set(nameof(SlaveId),ref _slaveId, value); } }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int SlaveId
+        {
+            get { return _slaveId; }
+            private set { Set(nameof(SlaveId),ref _slaveId, value); }
+        }
 
         private string _lastMessage = string.Empty;
-        public string LastMessage { get { return _lastMessage; } private set { Set(nameof(LastMessage), ref _lastMessage, value); } }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string LastMessage
+        {
+            get { return _lastMessage; }
+            private set { Set(nameof(LastMessage), ref _lastMessage, value); }
+        }
 
         public SlaveViewModel()
         {
+
             // Initialization
-            InitializeDigitalIoRepresentation();
+            InitializeLightSymbol();
             // Messaging
             MessengerInstance = Messenger.Default;
             MessengerInstance.Register<SlaveDataMessage>(this, HandleSlaveModelMessage);
             // Commands
             CreateNavigateToMasterPageCommand();
-            CreateSendProtocolFrameCommand();
+            CreateSendSlaveModelCommand();
             CreateChangeDigitalIoState();
+            // Events
         }
 
-        private void InitializeDigitalIoRepresentation()
+        /// <summary>
+        /// 
+        /// </summary>
+        private void InitializeLightSymbol()
         {
             Point delta = new Point(30, 40);
 
             int ioAmount = 8;
 
-            DigitalIoCollection = new ObservableCollection<DigitalIoRepresentation>();
+            DigitalIoCollection = new ObservableCollection<LightSymbol>();
 
             for (int i = 0; i < ioAmount / 2; i++)
             {
-                var newSymbol = new DigitalIoRepresentation()
+                var newSymbol = new LightSymbol()
                 {
                     X = i * delta.X,
                 };
@@ -93,7 +130,7 @@ namespace Com2Com.ViewModel
             }
             for (int i = 0; i <ioAmount/2; i++)
             {
-                var newSymbol = new DigitalIoRepresentation()
+                var newSymbol = new LightSymbol()
                 {
                     X = i * delta.X,
                     Y = delta.Y,
@@ -103,12 +140,44 @@ namespace Com2Com.ViewModel
             }
         }
 
+        /// <summary>
+        /// Updates slaveModel with user data
+        /// </summary>
+        private void UpdateViewModel(SlaveModel slaveModel)
+        {
+            for (int i = 0; i < DigitalIoCollection.Count; i++)
+            {
+                DigitalIoCollection[i].State = slaveModel.DigitalValues[i];
+            }
+            AnalogValue = slaveModel.AnalogValue;
+            SlaveId = slaveModel.SlaveId;
+        }
+
+        /// <summary>
+        /// Updates ViewModel with received slaveModel data
+        /// </summary>
+        private SlaveModel CreateSlaveModel()
+        {
+            SlaveModel slaveModel = new SlaveModel();
+            for (int i = 0; i < DigitalIoCollection.Count; i++)
+            {
+                slaveModel.DigitalValues[i] = DigitalIoCollection[i].State;
+            }
+            slaveModel.AnalogValue = AnalogValue;
+            slaveModel.SlaveId = SlaveId;
+            return slaveModel;
+        }
+
 
         #region Messaging
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         void HandleSlaveModelMessage(SlaveDataMessage message)
         {
-            _slaveModel = message.SlaveModel;
-            SlaveId = _slaveModel.SlaveID;
+            UpdateViewModel(message.SlaveModel);
+
             // ISSUE: There was a problem with reference to the _slaveModel variable ( each time message was send new object was created)
         }
         #endregion
@@ -129,14 +198,15 @@ namespace Com2Com.ViewModel
         /// <summary>
         /// 
         /// </summary>
-        public ICommand SendProtocolFrame { get; set; }
-        private void ExecuteSendProtocolFrameCommand()
+        public ICommand SendSlaveModel { get; private set; }
+        private void ExecuteSendSlaveModelCommand()
         {
-            MessengerInstance.Send(new SlaveDataMessage(_slaveModel));
+           
+            MessengerInstance.Send(new SlaveDataMessage(CreateSlaveModel()));
         }
-        private void CreateSendProtocolFrameCommand()
+        private void CreateSendSlaveModelCommand()
         {
-            SendProtocolFrame = new RelayCommand(ExecuteSendProtocolFrameCommand);
+            SendSlaveModel = new RelayCommand(ExecuteSendSlaveModelCommand);
         }
         /// <summary>
         /// 
@@ -145,20 +215,32 @@ namespace Com2Com.ViewModel
         private void ExecuteChangeDigitalIoState(MouseEventArgs e)
         {
             var soruce = e.Source as ItemsControl;
-            Point position = e.GetPosition(soruce);
+            Point mousePosition = e.GetPosition(soruce);
 
-            var clicked =
-                from symbols in DigitalIoCollection
-                where symbols.Contains(position)
-                select symbols;
+            LastMessage = $"X: {mousePosition.X}, Y: {mousePosition.Y}";
 
-            LastMessage = $"X: {position.X}, Y: {position.Y}";
+            int index = -1;
+            foreach (LightSymbol symbol in DigitalIoCollection)
+            {
+                if(symbol.Contains(mousePosition))
+                {
+                    index = DigitalIoCollection.IndexOf(symbol);
+                    break;
+                }
+            }
 
+            if(index>-1)
+                DigitalIoCollection[index].State = !DigitalIoCollection[index].State;
         }
         private void CreateChangeDigitalIoState()
         {
             ChangeDigitalIoState = new RelayCommand<MouseEventArgs>(ExecuteChangeDigitalIoState);
         }
+        #endregion
+
+        #region Events
+
+
         #endregion
     }
 }

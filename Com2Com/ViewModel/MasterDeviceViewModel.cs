@@ -5,6 +5,8 @@ using Com2Com.Common;
 using Com2Com.View;
 using System.Collections.ObjectModel;
 using GalaSoft.MvvmLight.Messaging;
+using Com2Com.Model;
+using System.Linq;
 
 namespace Com2Com.ViewModel
 {
@@ -22,16 +24,23 @@ namespace Com2Com.ViewModel
     /// </summary>
     public class MasterDeviceViewModel : ViewModelBase
     {
-        private ObservableCollection<string> _slaves = new ObservableCollection<string> { "dummmySlave" };
+        
+        private ObservableCollection<SlaveModel> _slaves = new ObservableCollection<SlaveModel>() { new SlaveModel() { SlaveId = 44, AnalogValue = 12.5 } };
 
-        public ObservableCollection<string> SlaveCollection
-        { get { return _slaves; } }
+        public ObservableCollection<SlaveModel> SlavesCollection
+        {
+            get { return _slaves; }
+            private set { Set(nameof(SlavesCollection), ref _slaves, value);}
+        }
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         public MasterDeviceViewModel()
         {
+            //Initialization
+            SlavesCollection.Add(new SlaveModel() { SlaveId = 33, AnalogValue = 99 });
+
             // Messaging
             MessengerInstance = Messenger.Default;
 
@@ -46,7 +55,10 @@ namespace Com2Com.ViewModel
         #region Messages 
         private void HandleSlaveDataMessage(SlaveDataMessage message)
         {
-            //TODO: IMPLEMNT HandleSlaveDataMessage
+            var slave = _slaves.Where((model) => model.SlaveId == message.SlaveModel.SlaveId).First();
+            //SlavesCollection[_slaves.IndexOf(slave)] = slave;
+            SlavesCollection.Remove(slave);
+            SlavesCollection.Add(message.SlaveModel);
         }
 
         private void HandleSerialPortSettingsMessage(SerialPortSettingsMessage message)
@@ -76,7 +88,7 @@ namespace Com2Com.ViewModel
         public ICommand NavigateToSlave { get; private set; }
         private void ExecuteNavigateToSlaveCommand()
         {
-            MessengerInstance.Send(new SlaveDataMessage(new Model.SlaveModel()));
+            MessengerInstance.Send(new SlaveDataMessage(_slaves[0]));
             NavigationHelper.NavigateTo<SlavePage>(_slaves[0]);
         }
         private void CreateNavigateToSlaveCommand()

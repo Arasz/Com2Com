@@ -24,5 +24,6 @@ namespace Com2Com.View
         {
             InitializeComponent();
         }
+
     }
 }

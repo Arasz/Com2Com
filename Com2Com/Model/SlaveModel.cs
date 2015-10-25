@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Com2Com.Model
 {
-    class SlaveModel
+    public class SlaveModel
     {
-        public List<bool> DigitalValues { get; set; } = new List<bool>();
+        public bool[] DigitalValues { get; set; } = new bool[8];
 
-        public int AnalogValue  = 0;
+        public double AnalogValue { get; set; } = 0;
 
-        public int SlaveID  = 255;
+        public int SlaveId { get; set; } = 255;
 
     }
 }

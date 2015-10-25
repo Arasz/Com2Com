@@ -11,7 +11,19 @@
       DataContext="{Binding Source={StaticResource Locator}, Path=MasterDevice}"
       Title="MasterPage" >
 
-
+    <Page.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="slaveIdTemplate">
+                <TextBlock Text="{Binding SlaveId}" Style="{StaticResource gridTextStyle}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="slaveAnalogValueTemplate">
+                <TextBlock Text="{Binding AnalogValue}" Style="{StaticResource gridTextStyle}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="slaveDigitalValueTemplate">
+                <TextBlock Text="{Binding SlaveId}" Style="{StaticResource gridTextStyle}"/>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Page.Resources>
 
 
     <Grid Style="{StaticResource gridStyle}">
@@ -25,7 +37,15 @@
 
         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Vertical">
             <TextBlock Text="{StaticResource strSlaveList}" Margin="0,5"/>
-            <ListView MinHeight="80" ItemsSource="{Binding SlaveCollection, Mode=OneWay}">
+            <ListView MinHeight="80" ItemsSource="{Binding SlavesCollection, Mode=OneWay}">
+                <ListView.View>
+                    <GridView >
+                        <GridViewColumn Header="ID" Width="auto" 
+                                        CellTemplate="{StaticResource slaveIdTemplate}"/>
+                        <GridViewColumn Header="Analog value" Width="auto" 
+                                        CellTemplate="{StaticResource slaveAnalogValueTemplate}"/>
+                    </GridView>
+                </ListView.View>
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="MouseDoubleClick">
                         <cmd:EventToCommand Command="{Binding NavigateToSlave}"/>
