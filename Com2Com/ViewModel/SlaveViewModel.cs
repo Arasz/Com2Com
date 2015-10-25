@@ -63,6 +63,8 @@ namespace Com2Com.ViewModel
     public class SlaveViewModel : ViewModelBase
     {
         public ObservableCollection<LightSymbol> DigitalIoCollection { get; private set; }
+         
+        private SlaveModel _inputSlaveModel;
 
         private double _analogValue = 0;
         /// <summary>
@@ -145,9 +147,10 @@ namespace Com2Com.ViewModel
         /// </summary>
         private void UpdateViewModel(SlaveModel slaveModel)
         {
+            uint mask = 0x01;
             for (int i = 0; i < DigitalIoCollection.Count; i++)
             {
-                DigitalIoCollection[i].State = slaveModel.DigitalValues[i];
+                DigitalIoCollection[i].State = Convert.ToBoolean((slaveModel.DigitalValue>>i) & mask);
             }
             AnalogValue = slaveModel.AnalogValue;
             SlaveId = slaveModel.SlaveId;
@@ -158,14 +161,24 @@ namespace Com2Com.ViewModel
         /// </summary>
         private SlaveModel CreateSlaveModel()
         {
+            uint digitalValue = 0x00;
             SlaveModel slaveModel = new SlaveModel();
             for (int i = 0; i < DigitalIoCollection.Count; i++)
             {
-                slaveModel.DigitalValues[i] = DigitalIoCollection[i].State;
+                digitalValue = digitalValue | (Convert.ToUInt32(DigitalIoCollection[i].State)<<i);
             }
+            slaveModel.DigitalValue = digitalValue;
             slaveModel.AnalogValue = AnalogValue;
             slaveModel.SlaveId = SlaveId;
             return slaveModel;
+        }
+
+        private bool SlaveModelChanged(SlaveModel slaveModel)
+        {
+            if (slaveModel.DigitalValue != _inputSlaveModel.DigitalValue || (slaveModel.AnalogValue != slaveModel.AnalogValue))
+                return true;
+            else
+                return false;
         }
 
 
@@ -176,8 +189,8 @@ namespace Com2Com.ViewModel
         /// <param name="message"></param>
         void HandleSlaveModelMessage(SlaveDataMessage message)
         {
+            _inputSlaveModel = message.SlaveModel;
             UpdateViewModel(message.SlaveModel);
-
             // ISSUE: There was a problem with reference to the _slaveModel variable ( each time message was send new object was created)
         }
         #endregion
@@ -201,8 +214,9 @@ namespace Com2Com.ViewModel
         public ICommand SendSlaveModel { get; private set; }
         private void ExecuteSendSlaveModelCommand()
         {
-           
-            MessengerInstance.Send(new SlaveDataMessage(CreateSlaveModel()));
+            // TODO: Use data changed parameter
+            var slaveModel = CreateSlaveModel();
+            MessengerInstance.Send(new SlaveDataMessage(slaveModel, SlaveModelChanged(slaveModel)));
         }
         private void CreateSendSlaveModelCommand()
         {

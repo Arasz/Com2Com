@@ -11,9 +11,12 @@ namespace Com2Com.ViewModel
     {
         public SlaveModel SlaveModel { get; set; }
 
-        public SlaveDataMessage(SlaveModel slaveModel)
+        public bool DataChanged { get; set; }
+
+        public SlaveDataMessage(SlaveModel slaveModel, bool dataChanged = true)
         {
             SlaveModel = slaveModel;
+            DataChanged = dataChanged;
         }
     }
 }

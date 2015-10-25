@@ -88,6 +88,7 @@ namespace Com2Com.ViewModel
         public ICommand NavigateToSlave { get; private set; }
         private void ExecuteNavigateToSlaveCommand()
         {
+            // TODO: Change this behavior
             MessengerInstance.Send(new SlaveDataMessage(_slaves[0]));
             NavigationHelper.NavigateTo<SlavePage>(_slaves[0]);
         }

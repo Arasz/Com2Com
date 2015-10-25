@@ -20,7 +20,8 @@
                 <TextBlock Text="{Binding AnalogValue}" Style="{StaticResource gridTextStyle}"/>
             </DataTemplate>
             <DataTemplate x:Key="slaveDigitalValueTemplate">
-                <TextBlock Text="{Binding SlaveId}" Style="{StaticResource gridTextStyle}"/>
+                <!-- TODO: Write converter -->
+                <TextBlock Text="{Binding DigitalValue}" Style="{StaticResource gridTextStyle}"/>
             </DataTemplate>
         </ResourceDictionary>
     </Page.Resources>
@@ -44,6 +45,8 @@
                                         CellTemplate="{StaticResource slaveIdTemplate}"/>
                         <GridViewColumn Header="Analog value" Width="auto" 
                                         CellTemplate="{StaticResource slaveAnalogValueTemplate}"/>
+                        <GridViewColumn Header="Digital value" Width="auto" 
+                                        CellTemplate="{StaticResource slaveDigitalValueTemplate}"/>
                     </GridView>
                 </ListView.View>
                 <i:Interaction.Triggers>

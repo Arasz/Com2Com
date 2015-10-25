@@ -8,7 +8,7 @@ namespace Com2Com.Model
 {
     public class SlaveModel
     {
-        public bool[] DigitalValues { get; set; } = new bool[8];
+        public uint DigitalValue { get; set; } = 0x00;
 
         public double AnalogValue { get; set; } = 0;
 
