@@ -36,6 +36,8 @@ namespace Com2Com.ViewModel
             private set { Set(nameof(SlavesCollection), ref _slaves, value);}
         }
 
+        public bool Connected { get { return _masterDeviceModel.Connected; } }
+
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
@@ -43,7 +45,7 @@ namespace Com2Com.ViewModel
         {
             //Initialization
             _masterDeviceModel = new MasterDeviceModel();
-            _slaves = new ObservableCollection<SlaveModel>() { new SlaveModel() { SlaveId = 44, AnalogValue = 169.2, DigitalValue = 200 } };
+            _slaves = new ObservableCollection<SlaveModel>() { new SlaveModel() { SlaveId = 44, AnalogValue = 169, DigitalValue = 200 } };
             SlavesCollection.Add(new SlaveModel() { SlaveId = 33, AnalogValue = 99 });
 
             // Messaging
@@ -55,6 +57,7 @@ namespace Com2Com.ViewModel
             // Commands
             CreateNavigateToSettingsCommand();
             CreateNavigateToSlaveCommand();
+            CreateRefreshSlaveListCommand();
         }
 
         #region Messages 
@@ -77,12 +80,16 @@ namespace Com2Com.ViewModel
                 SlavesCollection.Remove(slave);
                 SlavesCollection.Add(message.SlaveModel);
                 // HACK: Think about changing the way this functionality is implemented
+
+                _masterDeviceModel.SendMessageToSlave(slave.SlaveId, message.DataChanged, message.DataChanged);
             }
         }
 
         private void HandleSerialPortSettingsMessage(SerialPortSettingsMessage message)
         {
-            //TODO: IMPLEMNT HandleSlaveDataMessage
+            _masterDeviceModel.PortSettings = message.SerialPortSettings;
+            _masterDeviceModel.Connect();
+            RaisePropertyChanged(nameof(Connected));
         }
         #endregion
 
@@ -119,6 +126,18 @@ namespace Com2Com.ViewModel
         private void CreateNavigateToSlaveCommand()
         {
             NavigateToSlave = new RelayCommand<MouseButtonEventArgs>(ExecuteNavigateToSlaveCommand);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public ICommand RefreshSlaveList { get; private set; }
+        private void ExecuteRefreshSlaveListCommand()
+        {
+            _masterDeviceModel.SendMessageToSlave(ProtocolFrame.BroadcastId);
+        }
+        private void CreateRefreshSlaveListCommand()
+        {
+            RefreshSlaveList = new RelayCommand(ExecuteRefreshSlaveListCommand);
         }
         #endregion 
     }

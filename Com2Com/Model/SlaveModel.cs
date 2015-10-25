@@ -8,9 +8,9 @@ namespace Com2Com.Model
 {
     public class SlaveModel
     {
-        public uint DigitalValue { get; set; } = 0x00;
+        public ushort DigitalValue { get; set; } = 0x00;
 
-        public double AnalogValue { get; set; } = 0;
+        public short AnalogValue { get; set; } = 0;
 
         public int SlaveId { get; set; } = 255;
 

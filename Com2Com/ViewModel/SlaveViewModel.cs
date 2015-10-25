@@ -72,7 +72,7 @@ namespace Com2Com.ViewModel
         /// </summary>
         public double AnalogValue
         {
-            get { return _analogValue; }
+            get { return (double)_analogValue; }
             set { Set(nameof(AnalogValue), ref _analogValue, value); }
         }
 
@@ -167,15 +167,15 @@ namespace Com2Com.ViewModel
             {
                 digitalValue = digitalValue | (Convert.ToUInt32(DigitalIoCollection[i].State)<<i);
             }
-            slaveModel.DigitalValue = digitalValue;
-            slaveModel.AnalogValue = AnalogValue;
+            slaveModel.DigitalValue = (ushort)digitalValue;
+            slaveModel.AnalogValue = Convert.ToInt16(AnalogValue);
             slaveModel.SlaveId = SlaveId;
             return slaveModel;
         }
 
         private bool SlaveModelChanged(SlaveModel slaveModel)
         {
-            if (slaveModel.DigitalValue != _inputSlaveModel.DigitalValue || (slaveModel.AnalogValue != slaveModel.AnalogValue))
+            if (slaveModel.DigitalValue != _inputSlaveModel.DigitalValue || (slaveModel.AnalogValue != _inputSlaveModel.AnalogValue))
                 return true;
             else
                 return false;

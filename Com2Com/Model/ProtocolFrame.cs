@@ -9,6 +9,11 @@ namespace Com2Com.Model
     public class ProtocolFrame
     {
         /// <summary>
+        /// 
+        /// </summary>
+        public static readonly int BroadcastId  = 255;
+
+        /// <summary>
         /// Slave id number
         /// </summary>
         public int Id { get; private set; } = 0;
@@ -37,8 +42,8 @@ namespace Com2Com.Model
         public ProtocolFrame(int id, char[] command, byte[]data)
         {
             Data = data;
-            DataLength = (data.Length);
-            Array.Copy(command.Take(2).ToArray(), Command, 2);
+            DataLength = data?.Length ?? 0;
+            Command = command.Take(2).ToArray();
             Id = id;
             FrameLength = 4 + DataLength;
         }
@@ -50,8 +55,9 @@ namespace Com2Com.Model
             int index = 0;
             byteArray[index++] = Convert.ToByte(Id);
             byteArray[index++] = Convert.ToByte(DataLength);
-            Array.Copy(Command, 0, byteArray, ++index, Command.Length);
-            Array.Copy(Data, 0, byteArray, (index + Command.Length), DataLength);
+            Array.Copy(Encoding.ASCII.GetBytes(Command).Take(2).ToArray(), 0, byteArray, index, Command.Length);
+            if(Data != null)
+            Array.Copy(Data, 0, byteArray, (index + Command.Length), DataLength-1);
 
             return byteArray;
         }
