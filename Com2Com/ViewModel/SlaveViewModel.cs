@@ -103,7 +103,7 @@ namespace Com2Com.ViewModel
             InitializeLightSymbol();
             // Messaging
             MessengerInstance = Messenger.Default;
-            MessengerInstance.Register<SlaveDataMessage>(this, HandleSlaveModelMessage);
+            MessengerInstance.Register<SlaveDataMessage>(this, _inToken, HandleSlaveModelMessage);
             // Commands
             CreateNavigateToMasterPageCommand();
             CreateSendSlaveModelCommand();
@@ -183,6 +183,13 @@ namespace Com2Com.ViewModel
 
 
         #region Messaging
+
+        /// <summary>
+        /// Token which defines channel of communication. Only recipient which correct token will receive message.
+        /// </summary>
+        private string _inToken = "fromMasterToSlave";
+        private string _outToken = "fromSlaveToMaster";
+
         /// <summary>
         /// 
         /// </summary>
@@ -216,7 +223,7 @@ namespace Com2Com.ViewModel
         {
             // TODO: Use data changed parameter
             var slaveModel = CreateSlaveModel();
-            MessengerInstance.Send(new SlaveDataMessage(slaveModel, SlaveModelChanged(slaveModel)));
+            MessengerInstance.Send(new SlaveDataMessage(slaveModel, SlaveModelChanged(slaveModel)),_outToken);
         }
         private void CreateSendSlaveModelCommand()
         {

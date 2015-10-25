@@ -39,23 +39,36 @@ namespace Com2Com.Model
     {
 
         protected SerialPort _serialPort;
+
         protected SettingsModel _portSettings;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public SettingsModel PortSettings
+        {
+            get { return _portSettings; }
+            set
+            {
+                // TODO: Think about copy  
+                _portSettings = value;
+            }
+        }
 
-        public string PortName { get; set; } = "";
-        public int BaudRate { get; set; } = 9600;
-        public Parity Parity { get; set; } = Parity.None;
-        public StopBits StopBits { get; set; } = StopBits.One;
-        public DataBits DataBits { get; set; } = DataBits.Eight;
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool Connected { get; private set; }
+
 
         /// <summary>
         /// Opens used serial ports.
         /// </summary>
         public void Connect()
         {
-            if (!string.IsNullOrEmpty(PortName))
+            if (!string.IsNullOrEmpty(_portSettings.PortName))
             {
-                ConfigureSerialPort(ref _serialPort, PortName);
+                ConfigureSerialPort();
                 try
                 {
                     _serialPort.Open();
@@ -66,7 +79,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(ioex.Message, ioex)
                     {
                         PortType = "In",
-                        PortName = PortName,
+                        PortName = _portSettings.PortName,
                         Cause = "The port is in an invalid state. (Port parameters may not be correct)"
                     };
 
@@ -76,7 +89,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(argoorex.Message, argoorex)
                     {
                         PortType = "In",
-                        PortName = PortName,
+                        PortName = _portSettings.PortName,
                         Cause = "One or more of the properties for this instance are invalid. (For example wrong parity value)"
                     };
                 }
@@ -85,7 +98,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(argex.Message, argex)
                     {
                         PortType = "In",
-                        PortName = PortName,
+                        PortName = _portSettings.PortName,
                         Cause = "The port name does not begin with COM."
                     };
                 }
@@ -94,7 +107,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(unaccex.Message, unaccex)
                     {
                         PortType = "In",
-                        PortName = PortName,
+                        PortName = _portSettings.PortName,
                         Cause = "Access is denied to the port."
                     };
                 }
@@ -103,7 +116,7 @@ namespace Com2Com.Model
                     throw new ComDeviceException(invopex.Message, invopex)
                     {
                         PortType = "In",
-                        PortName = PortName,
+                        PortName = _portSettings.PortName,
                         Cause = "The specified port on the current instance of the SerialPort is already open."
                     };
                 }
@@ -111,6 +124,8 @@ namespace Com2Com.Model
                 {
                     if (!_serialPort.IsOpen)
                         Dispose();
+                    else
+                        Connected = true;
                 }
                 #endregion
             }
@@ -131,40 +146,49 @@ namespace Com2Com.Model
                 {
                     throw new ComDeviceException(ioex.Message, ioex)
                     {
-                        PortName = PortName,
+                        PortName = _portSettings.PortName,
                         PortType = "IN",
                         Cause = "The port is in an invalid state. (Port parameters may not be correct)",
                     };
                 }
+                finally
+                {
+                    if (!_serialPort.IsOpen)
+                        Connected = false;
+                }
             }
         }
 
-        protected void ConfigureSerialPort(ref SerialPort serialPort, string name)
+        /// <summary>
+        /// Configure serial port with parameters included in port settings
+        /// </summary>
+        /// <param name="serialPort">Serial port passed</param>
+        protected void ConfigureSerialPort()
         {
-            if (serialPort == null)
+            if (_serialPort == null)
             {
-                serialPort = new SerialPort()
+                _serialPort = new SerialPort()
                 {
-                    PortName = name,
-                    Parity = this.Parity,
-                    BaudRate = this.BaudRate,
-                    StopBits = this.StopBits,
-                    DataBits = (int)this.DataBits,
+                    PortName = _portSettings.PortName,
+                    Parity   = _portSettings.Parity,
+                    BaudRate = _portSettings.BaudRate,
+                    StopBits = _portSettings.StopBits,
+                    DataBits = (int)_portSettings.DataBits,
                 };
             }
             else
             {
-                if (serialPort.IsOpen)
+                if (_serialPort.IsOpen)
                     Disconnect();
 
-                serialPort.PortName = name;
-                serialPort.Parity = Parity;
-                serialPort.BaudRate = BaudRate;
-                serialPort.StopBits = StopBits;
-                serialPort.DataBits = (int)DataBits;
+                _serialPort.PortName = _serialPort.PortName;
+                _serialPort.Parity = _portSettings.Parity;
+                _serialPort.BaudRate = _portSettings.BaudRate;
+                _serialPort.StopBits = _portSettings.StopBits;
+                _serialPort.DataBits = (int)_portSettings.DataBits;
             }
 
-            serialPort.DataReceived += SerialPort_DataReceived;
+            _serialPort.DataReceived += SerialPort_DataReceived;
         }
 
         protected abstract void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e);

@@ -11,38 +11,49 @@ namespace Com2Com.Model
         /// <summary>
         /// Slave id number
         /// </summary>
-        public byte Id = 0;
+        public int Id { get; private set; } = 0;
         /// <summary>
         /// Data length in bytes
         /// </summary>
-        public byte DataLength = 1;
+        public int DataLength { get; private set; } = 1;
 
         /// <summary>
         /// Command
         /// </summary>
-        public char[] Command = new char[2];
+        public char[] Command { get; private set; } = new char[2];
 
         /// <summary>
         /// Data array
         /// </summary>
-        public byte[] Data;
+        public byte[] Data { get; private set; }
+
+        public int FrameLength { get; private set; } = 5;  
 
         /// <summary>
         /// CRC - Cyclic Redundancy Check.
         /// </summary>
-        public int CRC;
+       // public int CRC;
 
-        public ProtocolFrame()
-        {
-            Data = new byte[DataLength];
-        }
-
-        public ProtocolFrame(byte id, char[]command, byte dataLength, byte[]data)
+        public ProtocolFrame(int id, char[] command, byte[]data)
         {
             Data = data;
-            command.CopyTo(Command,0);
+            DataLength = (data.Length);
+            Array.Copy(command.Take(2).ToArray(), Command, 2);
             Id = id;
-            DataLength = dataLength;
+            FrameLength = 4 + DataLength;
+        }
+
+        public byte[] ConvertFrameToByteArray()
+        {
+            byte[] byteArray = new byte[FrameLength];
+
+            int index = 0;
+            byteArray[index++] = Convert.ToByte(Id);
+            byteArray[index++] = Convert.ToByte(DataLength);
+            Array.Copy(Command, 0, byteArray, ++index, Command.Length);
+            Array.Copy(Data, 0, byteArray, (index + Command.Length), DataLength);
+
+            return byteArray;
         }
 
     }
