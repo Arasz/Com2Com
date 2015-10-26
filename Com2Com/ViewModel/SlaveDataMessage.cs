@@ -11,12 +11,15 @@ namespace Com2Com.ViewModel
     {
         public SlaveModel SlaveModel { get; set; }
 
-        public bool DataChanged { get; set; }
+        public bool AnalogDataChanged { get; set; }
 
-        public SlaveDataMessage(SlaveModel slaveModel, bool dataChanged = true)
+        public bool DigitalDataChanged { get; set; }
+
+        public SlaveDataMessage(SlaveModel slaveModel, bool analogDataChanged = false, bool digitalDataChanged = false)
         {
             SlaveModel = slaveModel;
-            DataChanged = dataChanged;
+            AnalogDataChanged = analogDataChanged;
+            DigitalDataChanged = digitalDataChanged;
         }
     }
 }

@@ -82,6 +82,7 @@
     <Compile Include="Model\ProtocolFrame.cs" />
     <Compile Include="Model\SettingsModel.cs" />
     <Compile Include="Model\SlaveModel.cs" />
+    <Compile Include="ViewModel\ProtocolFrameMessage.cs" />
     <Compile Include="ViewModel\SerialPortSettingsMessage.cs" />
     <Compile Include="ViewModel\SlaveDataMessage.cs" />
     <Compile Include="ViewModel\StringToBaudrateConverter.cs" />

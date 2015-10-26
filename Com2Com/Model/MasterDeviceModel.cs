@@ -7,15 +7,13 @@ using System.Threading.Tasks;
 
 namespace Com2Com.Model
 {
-    public class DataReadyEventArgs: EventArgs
+    public class FrameEventArgs: EventArgs
     {
         public ProtocolFrame Frame { get; private set; }
-        public int UpdatedSlaveIndex { get; private set; }
 
-        public DataReadyEventArgs(ProtocolFrame frame, int updatedSlaveIndex)
+        public FrameEventArgs(ProtocolFrame frame)
         {
             Frame = frame;
-            UpdatedSlaveIndex = updatedSlaveIndex; 
         }
     } 
 
@@ -23,12 +21,21 @@ namespace Com2Com.Model
     {
 
         #region Events
-        public event EventHandler<DataReadyEventArgs> DataReady;
 
-        private void OnDataReady(ProtocolFrame frame, int updatedSlaveIndex)
+        public event EventHandler< FrameEventArgs> SlaveUpdated;
+
+        private void OnSlaveUpdated(ProtocolFrame frame)
         {
-            EventHandler<DataReadyEventArgs> handler = DataReady;
-            handler?.Invoke(this, new DataReadyEventArgs(frame, updatedSlaveIndex));
+            var handler = SlaveUpdated;
+            handler.Invoke(this, new FrameEventArgs(frame));
+        }
+
+        public event EventHandler<FrameEventArgs> MessageSent;
+
+        private void OnMessageSent(ProtocolFrame frame)
+        {
+            var handler = MessageSent;
+            handler?.Invoke(this, new FrameEventArgs(frame));
         }
 
         #endregion
@@ -37,7 +44,6 @@ namespace Com2Com.Model
 
         private Queue<string> _outgoingCommandsQueue = new Queue<string>();
 
-        private bool _canSend { get; set; } = true;
 
         public Dictionary<int, SlaveModel> Slaves { get; private set; }
 
@@ -57,6 +63,7 @@ namespace Com2Com.Model
         {
             _lastIncomingFrame =  ReadData();
             UpdateSlave(_lastIncomingFrame);
+            OnSlaveUpdated(_lastIncomingFrame);
         }
 
         /// <summary>
@@ -67,23 +74,24 @@ namespace Com2Com.Model
         /// <param name="digitalDataChanged"></param>
         public void SendMessageToSlave(int slaveId, bool analogDataChanged = false, bool digitalDataChanged = false)
         {
-
-            if (slaveId == 255) // BroadcastId
-                _outgoingCommandsQueue.Enqueue("ID");
+            // TODO: Delete queue
+            if (analogDataChanged && digitalDataChanged)
+                _outgoingCommandsQueue.Enqueue("AS");
             else
             {
                 if (analogDataChanged)
                     _outgoingCommandsQueue.Enqueue("SA");
                 if (digitalDataChanged)
                     _outgoingCommandsQueue.Enqueue("SD");
-                else
-                    _outgoingCommandsQueue.Enqueue("ID");
             }
+            if (!(digitalDataChanged || analogDataChanged))
+                _outgoingCommandsQueue.Enqueue("ID");
 
-            while(_outgoingCommandsQueue.Count != 0)
+            while (_outgoingCommandsQueue.Count != 0)
             {
                 ProtocolFrame protocolFrame = ConvertSlaveModelToProtocolFrame(Slaves[slaveId], _outgoingCommandsQueue.Dequeue());
                 SendData(protocolFrame);
+                OnMessageSent(protocolFrame);
             }
         }
 
@@ -102,14 +110,12 @@ namespace Com2Com.Model
                 case "SA":
                     frame = new ProtocolFrame(slave.SlaveId, command.ToCharArray(), BitConverter.GetBytes(slave.AnalogValue));
                     break;
-                case "GA":
-                    frame = new ProtocolFrame(slave.SlaveId, command.ToCharArray(), null);
-                    break;
                 case "SD":
                     frame = new ProtocolFrame(slave.SlaveId, command.ToCharArray(), BitConverter.GetBytes(slave.DigitalValue));
                     break;
-                case "GD":
-                    frame = new ProtocolFrame(slave.SlaveId, command.ToCharArray(), null);
+                case "AS":
+                    var concatedArray = BitConverter.GetBytes(slave.AnalogValue).Concat(BitConverter.GetBytes(slave.DigitalValue)).ToArray();
+                    frame = new ProtocolFrame(slave.SlaveId, command.ToCharArray(), concatedArray);
                     break;
                 case "ID":
                     frame = new ProtocolFrame(slave.SlaveId, command.ToCharArray(), null);
@@ -131,13 +137,12 @@ namespace Com2Com.Model
                 switch(cmd)
                 {
                     case "SA":
-                    case "GA":
                         Slaves[slaveId].AnalogValue = Convert.ToInt16(frame.Data);
                         break;
                     case "SD":
-                    case "GD":
                         Slaves[slaveId].DigitalValue = Convert.ToUInt16(frame.Data);
                         break;
+                    case "AS":
                     case "ID":
                         Slaves[slaveId].DigitalValue = Convert.ToUInt16(frame.Data.Take(frame.DataLength / 2));
                         Slaves[slaveId].AnalogValue = Convert.ToInt16(frame.Data.Skip(frame.DataLength / 2));
@@ -152,11 +157,6 @@ namespace Com2Com.Model
         {
             if(Connected)
                 _serialPort.Write(frame.ConvertFrameToByteArray(), 0, frame.FrameLength);
-            else
-            {
-                Connect();
-                 SendData(frame);
-            }
         }
         /// <summary>
         /// 
@@ -164,17 +164,22 @@ namespace Com2Com.Model
         /// <returns></returns>
         private ProtocolFrame ReadData()
         {
-            int id = _serialPort.ReadByte();
+            if(Connected)
+            {
+                int id = _serialPort.ReadByte();
 
-            int dataLength = _serialPort.ReadByte();
+                int dataLength = _serialPort.ReadByte();
 
-            char[] command = new char[2];
-            _serialPort.Read(command, 0, 2);
+                char[] command = new char[2];
+                _serialPort.Read(command, 0, 2);
 
-            byte[] data = new byte[dataLength];
-            _serialPort.Read(data, 0, dataLength);
+                byte[] data = new byte[dataLength];
+                _serialPort.Read(data, 0, dataLength);
 
-            return new ProtocolFrame(id, command, data);
+                return new ProtocolFrame(id, command, data);
+            }
+            throw new ComDeviceException("Attempt to read data from closed serial port.")
+            { Cause = "Serial port closed", PortName = _serialPort.PortName };
         }
 
         #region Dispose Pattern

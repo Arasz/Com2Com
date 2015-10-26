@@ -36,8 +36,9 @@
 
         <TextBlock Text="{StaticResource  mainPageName }" Style="{StaticResource pageTitleStyle}"/>
         
-        <Rectangle Grid.Row="0" HorizontalAlignment="Right" Width="100" Height="20"
-                   Fill="{Binding Connected, Converter={StaticResource boolToBrushConverter}}"/>
+        <Rectangle Grid.Row="0" HorizontalAlignment="Right" Width="60" Height="20"
+                   Fill="{Binding Connected, Converter={StaticResource boolToBrushConverter}}"
+                   Stroke="Black" StrokeThickness="2" Margin="20,0"/>
 
         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Vertical">
             

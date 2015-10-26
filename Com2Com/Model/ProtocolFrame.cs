@@ -62,5 +62,11 @@ namespace Com2Com.Model
             return byteArray;
         }
 
+        public override string ToString()
+        {
+            string bytes = Data != null ? BitConverter.ToString(Data) : string.Empty;
+            return $"{Id} {DataLength} {Convert.ToString(Command)} {bytes}";
+        }
+
     }
 }

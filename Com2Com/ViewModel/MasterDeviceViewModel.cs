@@ -8,6 +8,7 @@ using GalaSoft.MvvmLight.Messaging;
 using Com2Com.Model;
 using System.Linq;
 using System.Windows.Controls;
+using System.Collections.Generic;
 
 namespace Com2Com.ViewModel
 {
@@ -26,14 +27,26 @@ namespace Com2Com.ViewModel
     public class MasterDeviceViewModel : ViewModelBase
     {
 
+        #region Events
+        private void _masterDeviceModel_SlaveUpdated(object sender, FrameEventArgs e)
+        {
+            RaisePropertyChanged(nameof(SlavesCollection));
+            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame),_outToken);
+        }
+
+        private void _masterDeviceModel_MessageSent(object sender, FrameEventArgs e)
+        {
+            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame), _outToken);
+        }
+        #endregion
+
         private MasterDeviceModel _masterDeviceModel;
 
-        private ObservableCollection<SlaveModel> _slaves;
+        private Dictionary<int, SlaveModel> _slaves;
 
         public ObservableCollection<SlaveModel> SlavesCollection
         {
-            get { return _slaves; }
-            private set { Set(nameof(SlavesCollection), ref _slaves, value);}
+            get { return new ObservableCollection<SlaveModel>(_slaves.Values); }
         }
 
         public bool Connected { get { return _masterDeviceModel.Connected; } }
@@ -45,12 +58,15 @@ namespace Com2Com.ViewModel
         {
             //Initialization
             _masterDeviceModel = new MasterDeviceModel();
-            _slaves = new ObservableCollection<SlaveModel>() { new SlaveModel() { SlaveId = 44, AnalogValue = 169, DigitalValue = 200 } };
-            SlavesCollection.Add(new SlaveModel() { SlaveId = 33, AnalogValue = 99 });
+            _slaves = _masterDeviceModel.Slaves;
+
+            //Events subscription
+
+            _masterDeviceModel.SlaveUpdated += _masterDeviceModel_SlaveUpdated;
+            _masterDeviceModel.MessageSent += _masterDeviceModel_MessageSent;
 
             // Messaging
             MessengerInstance = Messenger.Default;
-
             MessengerInstance.Register<SlaveDataMessage>(this,_inToken, HandleSlaveDataMessage);
             MessengerInstance.Register<SerialPortSettingsMessage>(this, HandleSerialPortSettingsMessage);
 
@@ -62,7 +78,7 @@ namespace Com2Com.ViewModel
 
         #region Messages 
         /// <summary>
-        /// Token which defines channel of communication. Only recipient which correct token will receive message.
+        /// Token which defines channel of communication. Only recipient with correct token will receive message.
         /// </summary>
         private string _outToken = "fromMasterToSlave";
         private string _inToken = "fromSlaveToMaster";
@@ -73,29 +89,39 @@ namespace Com2Com.ViewModel
         /// <param name="message"></param>
         private void HandleSlaveDataMessage(SlaveDataMessage message)
         {
-            if(message.DataChanged)
+            int slaveId = message.SlaveModel.SlaveId;
+            // TODO: Separate this condition
+            if (message.AnalogDataChanged || message.DigitalDataChanged)
             {
-                var slave = _slaves.Where((model) => model.SlaveId == message.SlaveModel.SlaveId).First();
-                //SlavesCollection[_slaves.IndexOf(slave)] = slave;
-                SlavesCollection.Remove(slave);
-                SlavesCollection.Add(message.SlaveModel);
-                // HACK: Think about changing the way this functionality is implemented
+                _slaves[slaveId].DigitalValue = message.SlaveModel.DigitalValue;
+                _slaves[slaveId].AnalogValue = message.SlaveModel.AnalogValue;
 
-                _masterDeviceModel.SendMessageToSlave(slave.SlaveId, message.DataChanged, message.DataChanged);
+                RaisePropertyChanged(nameof(SlavesCollection));
             }
+            _masterDeviceModel.SendMessageToSlave(slaveId, digitalDataChanged: message.DigitalDataChanged,analogDataChanged: message.AnalogDataChanged);
+
         }
 
         private void HandleSerialPortSettingsMessage(SerialPortSettingsMessage message)
         {
             _masterDeviceModel.PortSettings = message.SerialPortSettings;
-            _masterDeviceModel.Connect();
+            try
+            {
+                _masterDeviceModel.Connect();
+            }
+            catch(ComDeviceException comex)
+            {
+                // HACK: Make this in MVVM style
+                string mboxText = $"Port name: {comex.PortName}\nMessage: {comex.Message}\nAdditional informations: {comex.Cause}";
+                System.Windows.MessageBox.Show(mboxText, "Exception", System.Windows.MessageBoxButton.OK);
+            }
             RaisePropertyChanged(nameof(Connected));
         }
         #endregion
 
         #region Commands
         /// <summary>
-        /// Navigate to settings page.
+        /// Navigate to settings page
         /// </summary>
         public ICommand NavigateToSettings
         {
@@ -108,27 +134,38 @@ namespace Com2Com.ViewModel
         }
         private void ExecuteNavigateToSettingsCommand()
         {
+            try
+            {
+                _masterDeviceModel.Disconnect();
+            }
+            catch (ComDeviceException comex)
+            {
+                // HACK: Make this in MVVM style
+                string mboxText = $"Port name: {comex.PortName}\nMessage: {comex.Message}\nAdditional informations: {comex.Cause}";
+                System.Windows.MessageBox.Show(mboxText, "Exception", System.Windows.MessageBoxButton.OK);
+            }
             NavigationHelper.NavigateTo<SettingsPage>();
         }
         /// <summary>
-        /// 
+        /// Navigate to slave page and pass chosen SlaveModel object
         /// </summary>
         public ICommand NavigateToSlave { get; private set; }
         private void ExecuteNavigateToSlaveCommand(MouseButtonEventArgs e)
         {
             var soruce = e.Source as ListView;
-            // TODO: What if there is no slave ?
             int selectedIndex = soruce.SelectedIndex;
-            MessengerInstance.Send(new SlaveDataMessage(_slaves[selectedIndex]),_outToken);
-
-            NavigationHelper.NavigateTo<SlavePage>();
+            if(selectedIndex > -1)
+            {
+                MessengerInstance.Send(new SlaveDataMessage(SlavesCollection[selectedIndex]), _outToken);
+                NavigationHelper.NavigateTo<SlavePage>();
+            }
         }
         private void CreateNavigateToSlaveCommand()
         {
             NavigateToSlave = new RelayCommand<MouseButtonEventArgs>(ExecuteNavigateToSlaveCommand);
         }
         /// <summary>
-        /// 
+        /// Refresh slave list (send broadcast id command )
         /// </summary>
         public ICommand RefreshSlaveList { get; private set; }
         private void ExecuteRefreshSlaveListCommand()

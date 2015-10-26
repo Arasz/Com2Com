@@ -71,8 +71,7 @@ namespace Com2Com.ViewModel
 
         public static void Cleanup()
         {
-            // TODO Clear the ViewModels
-            
+            throw new NotImplementedException();   
         }
 
         private INavigationService CreateNavigationService()

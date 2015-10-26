@@ -90,8 +90,8 @@
                 <Run Text="{StaticResource strID}"/>
                 <Run Text="{Binding SlaveId, Mode=OneWay}"/>
             </TextBlock>
-            <TextBlock Text="{Binding LastMessage, Mode=OneWay}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                       Style="{StaticResource gridTextStyle}"/>
+            <TextBlock Text="{Binding LastMessage, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                       Style="{StaticResource gridTextStyle}" MaxHeight="40"/>
         </StackPanel>
 
     </Grid>

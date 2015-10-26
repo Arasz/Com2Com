@@ -66,7 +66,7 @@ namespace Com2Com.Model
         /// </summary>
         public void Connect()
         {
-            if (!string.IsNullOrEmpty(_portSettings.PortName))
+            if (!string.IsNullOrEmpty(_portSettings?.PortName))
             {
                 ConfigureSerialPort();
                 try

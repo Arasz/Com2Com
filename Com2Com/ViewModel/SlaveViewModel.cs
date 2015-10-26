@@ -68,7 +68,7 @@ namespace Com2Com.ViewModel
 
         private double _analogValue = 0;
         /// <summary>
-        /// 
+        /// Slave analog i/o value
         /// </summary>
         public double AnalogValue
         {
@@ -78,7 +78,7 @@ namespace Com2Com.ViewModel
 
         private int _slaveId = 0;
         /// <summary>
-        /// 
+        /// Slave id
         /// </summary>
         public int SlaveId
         {
@@ -88,7 +88,7 @@ namespace Com2Com.ViewModel
 
         private string _lastMessage = string.Empty;
         /// <summary>
-        /// 
+        /// Last sent/received message
         /// </summary>
         public string LastMessage
         {
@@ -100,10 +100,11 @@ namespace Com2Com.ViewModel
         {
 
             // Initialization
-            InitializeLightSymbol();
+            InitializeLightSymbols();
             // Messaging
             MessengerInstance = Messenger.Default;
             MessengerInstance.Register<SlaveDataMessage>(this, _inToken, HandleSlaveModelMessage);
+            MessengerInstance.Register<ProtocolFrameMessage>(this, _inToken, HandleProtocolFrameMessage);
             // Commands
             CreateNavigateToMasterPageCommand();
             CreateSendSlaveModelCommand();
@@ -112,9 +113,9 @@ namespace Com2Com.ViewModel
         }
 
         /// <summary>
-        /// 
+        /// Creates representation of digital i/o
         /// </summary>
-        private void InitializeLightSymbol()
+        private void InitializeLightSymbols()
         {
             Point delta = new Point(30, 40);
 
@@ -143,7 +144,7 @@ namespace Com2Com.ViewModel
         }
 
         /// <summary>
-        /// Updates slaveModel with user data
+        /// Updates ViewModel with received slaveModel data
         /// </summary>
         private void UpdateViewModel(SlaveModel slaveModel)
         {
@@ -157,7 +158,7 @@ namespace Com2Com.ViewModel
         }
 
         /// <summary>
-        /// Updates ViewModel with received slaveModel data
+        /// Creates new slave model with user data
         /// </summary>
         private SlaveModel CreateSlaveModel()
         {
@@ -173,12 +174,17 @@ namespace Com2Com.ViewModel
             return slaveModel;
         }
 
-        private bool SlaveModelChanged(SlaveModel slaveModel)
+        /// <summary>
+        /// Checks if slave model changed and stores information about this change in message
+        /// </summary>
+        /// <param name="message">Message with slave model and data about change</param>
+        /// <returns></returns>
+        private void CheckSlaveModelChanged(SlaveDataMessage message)
         {
-            if (slaveModel.DigitalValue != _inputSlaveModel.DigitalValue || (slaveModel.AnalogValue != _inputSlaveModel.AnalogValue))
-                return true;
-            else
-                return false;
+            if (message.SlaveModel.DigitalValue != _inputSlaveModel.DigitalValue)
+                message.DigitalDataChanged = true;
+            if (message.SlaveModel.AnalogValue != _inputSlaveModel.AnalogValue)
+                message.AnalogDataChanged = true;
         }
 
 
@@ -191,14 +197,22 @@ namespace Com2Com.ViewModel
         private string _outToken = "fromSlaveToMaster";
 
         /// <summary>
-        /// 
+        /// Processes message with slave data
         /// </summary>
-        /// <param name="message"></param>
-        void HandleSlaveModelMessage(SlaveDataMessage message)
+        /// <param name="message">Slave model</param>
+        private void HandleSlaveModelMessage(SlaveDataMessage message)
         {
             _inputSlaveModel = message.SlaveModel;
             UpdateViewModel(message.SlaveModel);
-            // ISSUE: There was a problem with reference to the _slaveModel variable ( each time message was send new object was created)
+        }
+
+        /// <summary>
+        /// Processes message with used protocol frame
+        /// </summary>
+        /// <param name="message">Protocol frame</param>
+        private void HandleProtocolFrameMessage(ProtocolFrameMessage message)
+        {
+            LastMessage += Environment.NewLine + message.Frame.ToString();
         }
         #endregion
 
@@ -220,10 +234,11 @@ namespace Com2Com.ViewModel
         /// </summary>
         public ICommand SendSlaveModel { get; private set; }
         private void ExecuteSendSlaveModelCommand()
-        {
-            // TODO: Use data changed parameter
-            var slaveModel = CreateSlaveModel();
-            MessengerInstance.Send(new SlaveDataMessage(slaveModel, SlaveModelChanged(slaveModel)),_outToken);
+        { 
+            SlaveModel slaveModel = CreateSlaveModel();
+            SlaveDataMessage message = new SlaveDataMessage(slaveModel);
+            CheckSlaveModelChanged(message);
+            MessengerInstance.Send(message,_outToken);
         }
         private void CreateSendSlaveModelCommand()
         {
@@ -237,8 +252,6 @@ namespace Com2Com.ViewModel
         {
             var soruce = e.Source as ItemsControl;
             Point mousePosition = e.GetPosition(soruce);
-
-            LastMessage = $"X: {mousePosition.X}, Y: {mousePosition.Y}";
 
             int index = -1;
             foreach (LightSymbol symbol in DigitalIoCollection)
