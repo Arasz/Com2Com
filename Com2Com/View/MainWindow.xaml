@@ -8,7 +8,7 @@
         x:Name="mainWindow"
         Title="Com2Com"
         MinHeight="250" MinWidth="320" 
-        MaxHeight="260" MaxWidth="400"
+        MaxHeight="270" MaxWidth="500"
         Height="{Binding RelativeSource={RelativeSource Self}, Path=min}"
         Width="{Binding RelativeSource={RelativeSource Mode=Self}, Path=MinWidth}"
         >
