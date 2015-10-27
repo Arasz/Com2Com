@@ -170,7 +170,7 @@ namespace Com2Com.Model
                 _serialPort = new SerialPort()
                 {
                     PortName = _portSettings.PortName,
-                    Parity   = _portSettings.Parity,
+                    Parity = _portSettings.Parity,
                     BaudRate = _portSettings.BaudRate,
                     StopBits = _portSettings.StopBits,
                     DataBits = (int)_portSettings.DataBits,

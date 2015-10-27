@@ -45,16 +45,11 @@ namespace Com2Com.Model
 
         private ProtocolFrame _lastIncomingFrame;
 
-        private Queue<string> _outgoingCommandsQueue = new Queue<string>();
-
-
         public Dictionary<int, SlaveModel> Slaves { get; private set; }
 
         public MasterDeviceModel()
         {
             Slaves = new Dictionary<int, SlaveModel>() { [255] = new SlaveModel() { SlaveId = 255 } };
-            // HACK: DUMMY SLAVE
-            //Slaves[44]  = new SlaveModel() { SlaveId = 44, AnalogValue = 169, DigitalValue = 200 };
         }
 
         /// <summary>
@@ -77,24 +72,22 @@ namespace Com2Com.Model
         /// <param name="digitalDataChanged"></param>
         public void SendMessageToSlave(int slaveId, bool analogDataChanged = false, bool digitalDataChanged = false)
         {
-            // TODO: Delete queue
+            string command = "";
+
             if (analogDataChanged && digitalDataChanged)
-                _outgoingCommandsQueue.Enqueue("AS");
+                command = ("AS");
             else
             {
                 if (analogDataChanged)
-                    _outgoingCommandsQueue.Enqueue("SA");
+                    command = ("SA");
                 if (digitalDataChanged)
-                    _outgoingCommandsQueue.Enqueue("SD");
+                    command = ("SD");
             }
             if (!(digitalDataChanged || analogDataChanged))
-                _outgoingCommandsQueue.Enqueue("ID");
+                command = ("ID");
 
-            while (_outgoingCommandsQueue.Count != 0)
-            {
-                ProtocolFrame protocolFrame = ConvertSlaveModelToProtocolFrame(Slaves[slaveId], _outgoingCommandsQueue.Dequeue());
-                SendData(protocolFrame);
-            }
+            ProtocolFrame protocolFrame = ConvertSlaveModelToProtocolFrame(Slaves[slaveId], command);
+            SendData(protocolFrame);
         }
 
         /// <summary>
