@@ -7,7 +7,7 @@
       mc:Ignorable="d" 
       xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
       xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
-      d:DesignHeight="200" d:DesignWidth="300"
+      d:DesignHeight="210" d:DesignWidth="350"
       Title="SlavePage" Name="slavePage"
       DataContext="{Binding Source={StaticResource Locator}, Path=Slave}"
       >
@@ -27,13 +27,31 @@
                                    Fill="{Binding State, Converter={StaticResource boolToBrushConverter}, Mode=OneWay}"
                                    Stroke="Black" StrokeThickness="1" StrokeLineJoin="Round"/>
             </DataTemplate>
+
+            <Style x:Key="textBlockStyle" TargetType="{x:Type TextBox}">
+                <Setter Property="Background" Value="{x:Null}" />
+                <Setter Property="BorderBrush" Value="Black" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="IsReadOnly" Value="True" />
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Background" Value="{x:Null}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            
         </ResourceDictionary>
     </Page.Resources>
     
     <Grid Style="{StaticResource gridStyle}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -72,26 +90,32 @@
 
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="0, 10">
             <TextBlock Text="Analog I/O" HorizontalAlignment="Center"/>
-            <ProgressBar Margin="10,10,10,10" Minimum="0" Maximum="255" Height="10"
+            <!-- ISSUE: There is problem with values greater than 63. They are rounded to 63 if they are bigger-->
+            <ProgressBar Margin="10,10,0,10" Minimum="0" Maximum="63" Height="10"
                          Value="{Binding AnalogValue, Mode=OneWay}"/>
-            <Slider Margin="10,20,10,10" Minimum="0" Maximum="255" 
+            <Slider Margin="10,20,0,10" Minimum="0" Maximum="63" 
                     Value="{Binding AnalogValue, Mode=TwoWay}"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" 
                     HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Button Style="{StaticResource backButtonStyle}" Margin="10,0" Command="{Binding NavigateToMasterPage}"/>
+            <Button Style="{StaticResource backButtonStyle}" Margin="15,0" Command="{Binding NavigateToMasterPage}"
+                    />
             <Button Content="Send" Style="{StaticResource defaultButtonStyle}" Command="{Binding SendSlaveModel}"
-                    Margin="10,0"/>
+                    Margin="15,0"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical">
+        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical" ClipToBounds="True">
             <TextBlock Style="{StaticResource gridTextStyle}">
                 <Run Text="{StaticResource strID}"/>
                 <Run Text="{Binding SlaveId, Mode=OneWay}"/>
             </TextBlock>
-            <TextBlock Text="{Binding LastMessage, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                       Style="{StaticResource gridTextStyle}" MaxHeight="40"/>
+            <TextBox Text="{Binding LastMessage, Mode=OneWay}"
+                       Style="{StaticResource textBlockStyle}" MaxHeight="40" 
+                       ScrollViewer.CanContentScroll="True"
+                       ScrollViewer.VerticalScrollBarVisibility="Visible"
+                       ScrollViewer.IsDeferredScrollingEnabled="True"
+                       Margin="0,5"/>
         </StackPanel>
 
     </Grid>

@@ -8,7 +8,7 @@
       mc:Ignorable="d" 
       xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
       xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
-      d:DesignHeight="200" d:DesignWidth="300"
+      d:DesignHeight="210" d:DesignWidth="350"
       Title="SettingsPage"
       DataContext="{Binding Source={StaticResource Locator}, Path=Settings}"
       >
@@ -73,6 +73,6 @@
         <TextBlock Grid.Row="3" Grid.Column="0" Text="{StaticResource strBaudrate}"
                    Style="{StaticResource gridTextStyle}"/>
         <TextBox Text="{Binding BaudRate, Converter={StaticResource strToBaudConv} }"  Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
-                 Margin="20,0" VerticalAlignment="Center" />            
+                 Margin="0,0" VerticalAlignment="Center" />            
     </Grid>
 </Page>

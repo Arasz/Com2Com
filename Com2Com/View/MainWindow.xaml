@@ -6,10 +6,13 @@
         xmlns:local="clr-namespace:Com2Com"
         mc:Ignorable="d"
         x:Name="mainWindow"
-        Title="Com2Com" MinHeight="250" MinWidth="300" 
-        Width="{Binding ElementName=mainWindow, Path=MinWidth}"
-        Height="{Binding ElementName=mainWindow, Path=MinHeight}">
+        Title="Com2Com"
+        MinHeight="250" MinWidth="320" 
+        MaxHeight="260" MaxWidth="400"
+        Height="{Binding RelativeSource={RelativeSource Self}, Path=min}"
+        Width="{Binding RelativeSource={RelativeSource Mode=Self}, Path=MinWidth}"
+        >
     
-        <Frame x:Name="mainFrame" NavigationUIVisibility="Hidden"/>
+       <Frame x:Name="mainFrame" NavigationUIVisibility="Hidden"/>
     
 </Window>

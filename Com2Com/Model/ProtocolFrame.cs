@@ -65,7 +65,7 @@ namespace Com2Com.Model
         public override string ToString()
         {
             string bytes = Data != null ? BitConverter.ToString(Data) : string.Empty;
-            return $"{Id} {DataLength} {Convert.ToString(Command)} {bytes}";
+            return $"{Id} {DataLength} {new string(Command)} {bytes}";
         }
 
     }

@@ -28,15 +28,17 @@ namespace Com2Com.ViewModel
     {
 
         #region Events
-        private void _masterDeviceModel_SlaveUpdated(object sender, FrameEventArgs e)
+        private void _masterDeviceModel_SlaveUpdated(object sender, MessageStatusChangedEventArgs e)
         {
             RaisePropertyChanged(nameof(SlavesCollection));
-            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame),_outToken);
+            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,false),_outToken);
+            // HACK: We don't know what changed
+            MessengerInstance.Send(new SlaveDataMessage(_slaves[e.SlaveId],true,true), _outToken);
         }
 
-        private void _masterDeviceModel_MessageSent(object sender, FrameEventArgs e)
+        private void _masterDeviceModel_MessageSent(object sender, MessageStatusChangedEventArgs e)
         {
-            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame), _outToken);
+            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,true), _outToken);
         }
         #endregion
 
@@ -89,16 +91,19 @@ namespace Com2Com.ViewModel
         /// <param name="message"></param>
         private void HandleSlaveDataMessage(SlaveDataMessage message)
         {
-            int slaveId = message.SlaveModel.SlaveId;
-            // TODO: Separate this condition
-            if (message.AnalogDataChanged || message.DigitalDataChanged)
+            if (Connected)
             {
-                _slaves[slaveId].DigitalValue = message.SlaveModel.DigitalValue;
-                _slaves[slaveId].AnalogValue = message.SlaveModel.AnalogValue;
+                int slaveId = message.SlaveModel.SlaveId;
+                // TODO: Separate this condition
+                if ((message.AnalogDataChanged || message.DigitalDataChanged))
+                {
+                    _slaves[slaveId].DigitalValue = message.SlaveModel.DigitalValue;
+                    _slaves[slaveId].AnalogValue = message.SlaveModel.AnalogValue;
 
-                RaisePropertyChanged(nameof(SlavesCollection));
+                    RaisePropertyChanged(nameof(SlavesCollection));
+                }
+                _masterDeviceModel.SendMessageToSlave(slaveId, digitalDataChanged: message.DigitalDataChanged, analogDataChanged: message.AnalogDataChanged);
             }
-            _masterDeviceModel.SendMessageToSlave(slaveId, digitalDataChanged: message.DigitalDataChanged,analogDataChanged: message.AnalogDataChanged);
 
         }
 

@@ -43,6 +43,7 @@
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="Margin" Value="0,10"/>
                 <Setter Property="IsEditable" Value="False"/>
+                <Setter Property="Margin" Value="2.5,0,2.5,0"/>
             </Style>
 
             <Style x:Key="backButtonStyle" TargetType="Button">
@@ -52,6 +53,7 @@
                 <Setter Property="Foreground" Value="Black"/>
                 <Setter Property="Content" Value="Back"/>
                 <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="MinWidth" Value="30"/>
             </Style>
 
             <Style x:Key="defaultButtonStyle" TargetType="Button">
@@ -60,6 +62,7 @@
                 <Setter Property="BorderBrush" Value="Black"/>
                 <Setter Property="Foreground" Value="Black"/>
                 <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="MinWidth" Value="30"/>
             </Style>
 
             <Style x:Key="gridTextStyle" TargetType="TextBlock">

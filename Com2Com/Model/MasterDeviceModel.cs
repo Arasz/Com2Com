@@ -7,13 +7,16 @@ using System.Threading.Tasks;
 
 namespace Com2Com.Model
 {
-    public class FrameEventArgs: EventArgs
+    public class MessageStatusChangedEventArgs: EventArgs
     {
         public ProtocolFrame Frame { get; private set; }
 
-        public FrameEventArgs(ProtocolFrame frame)
+        public int SlaveId { get; private set; }
+
+        public MessageStatusChangedEventArgs(ProtocolFrame frame, int slaveId = 255)
         {
             Frame = frame;
+            SlaveId = slaveId;
         }
     } 
 
@@ -22,20 +25,20 @@ namespace Com2Com.Model
 
         #region Events
 
-        public event EventHandler< FrameEventArgs> SlaveUpdated;
+        public event EventHandler< MessageStatusChangedEventArgs> SlaveUpdated;
 
-        private void OnSlaveUpdated(ProtocolFrame frame)
+        private void OnSlaveUpdated(ProtocolFrame frame, int slaveId)
         {
             var handler = SlaveUpdated;
-            handler.Invoke(this, new FrameEventArgs(frame));
+            handler.Invoke(this, new MessageStatusChangedEventArgs(frame, slaveId));
         }
 
-        public event EventHandler<FrameEventArgs> MessageSent;
+        public event EventHandler<MessageStatusChangedEventArgs> MessageSent;
 
         private void OnMessageSent(ProtocolFrame frame)
         {
             var handler = MessageSent;
-            handler?.Invoke(this, new FrameEventArgs(frame));
+            handler?.Invoke(this, new MessageStatusChangedEventArgs(frame));
         }
 
         #endregion
@@ -51,7 +54,7 @@ namespace Com2Com.Model
         {
             Slaves = new Dictionary<int, SlaveModel>() { [255] = new SlaveModel() { SlaveId = 255 } };
             // HACK: DUMMY SLAVE
-            Slaves[44]  = new SlaveModel() { SlaveId = 44, AnalogValue = 169, DigitalValue = 200 };
+            //Slaves[44]  = new SlaveModel() { SlaveId = 44, AnalogValue = 169, DigitalValue = 200 };
         }
 
         /// <summary>
@@ -63,7 +66,7 @@ namespace Com2Com.Model
         {
             _lastIncomingFrame =  ReadData();
             UpdateSlave(_lastIncomingFrame);
-            OnSlaveUpdated(_lastIncomingFrame);
+            OnSlaveUpdated(_lastIncomingFrame, _lastIncomingFrame.Id);
         }
 
         /// <summary>
@@ -91,7 +94,6 @@ namespace Com2Com.Model
             {
                 ProtocolFrame protocolFrame = ConvertSlaveModelToProtocolFrame(Slaves[slaveId], _outgoingCommandsQueue.Dequeue());
                 SendData(protocolFrame);
-                OnMessageSent(protocolFrame);
             }
         }
 
@@ -133,19 +135,19 @@ namespace Com2Com.Model
             if (!Slaves.ContainsKey(slaveId))
                 Slaves[slaveId] = new SlaveModel() { SlaveId = slaveId };
 
-            var cmd = frame.Command.ToString();
+            var cmd = new string(frame.Command);
                 switch(cmd)
                 {
                     case "SA":
-                        Slaves[slaveId].AnalogValue = Convert.ToInt16(frame.Data);
+                        Slaves[slaveId].AnalogValue = BitConverter.ToInt16(frame.Data,0);
                         break;
                     case "SD":
-                        Slaves[slaveId].DigitalValue = Convert.ToUInt16(frame.Data);
+                        Slaves[slaveId].DigitalValue = BitConverter.ToUInt16(frame.Data,0);
                         break;
                     case "AS":
                     case "ID":
-                        Slaves[slaveId].DigitalValue = Convert.ToUInt16(frame.Data.Take(frame.DataLength / 2));
-                        Slaves[slaveId].AnalogValue = Convert.ToInt16(frame.Data.Skip(frame.DataLength / 2));
+                        Slaves[slaveId].AnalogValue = BitConverter.ToInt16(frame.Data, 0);
+                        Slaves[slaveId].DigitalValue = BitConverter.ToUInt16(frame.Data, frame.DataLength / 2);
                         break;
                 } 
         }
@@ -155,8 +157,11 @@ namespace Com2Com.Model
         /// <param name="frame"></param>
         public void SendData(ProtocolFrame frame)
         {
-            if(Connected)
+            if (Connected)
+            {
                 _serialPort.Write(frame.ConvertFrameToByteArray(), 0, frame.FrameLength);
+                OnMessageSent(frame);
+            }
         }
         /// <summary>
         /// 

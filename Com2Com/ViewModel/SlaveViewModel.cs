@@ -72,7 +72,7 @@ namespace Com2Com.ViewModel
         /// </summary>
         public double AnalogValue
         {
-            get { return (double)_analogValue; }
+            get { return _analogValue; }
             set { Set(nameof(AnalogValue), ref _analogValue, value); }
         }
 
@@ -169,7 +169,7 @@ namespace Com2Com.ViewModel
                 digitalValue = digitalValue | (Convert.ToUInt32(DigitalIoCollection[i].State)<<i);
             }
             slaveModel.DigitalValue = (ushort)digitalValue;
-            slaveModel.AnalogValue = Convert.ToInt16(AnalogValue);
+            slaveModel.AnalogValue =(short)Convert.ToInt32(AnalogValue);
             slaveModel.SlaveId = SlaveId;
             return slaveModel;
         }
@@ -212,7 +212,14 @@ namespace Com2Com.ViewModel
         /// <param name="message">Protocol frame</param>
         private void HandleProtocolFrameMessage(ProtocolFrameMessage message)
         {
-            LastMessage += Environment.NewLine + message.Frame.ToString();
+            if(message.IsOutputFrame)
+            {
+                LastMessage += "OUT: " + message.Frame.ToString() + Environment.NewLine;
+            }
+            else
+            {
+                LastMessage += "IN: "+ message.Frame.ToString() + Environment.NewLine;
+            }
         }
         #endregion
 

@@ -12,9 +12,12 @@ namespace Com2Com.ViewModel
     {
         public ProtocolFrame Frame { get; set; }
 
-        public ProtocolFrameMessage(ProtocolFrame frame)
+        public bool IsOutputFrame { get; set; }
+
+        public ProtocolFrameMessage(ProtocolFrame frame, bool isOutputFrame = false)
         {
             Frame = frame;
+            IsOutputFrame = isOutputFrame;
         }
     }
 }
