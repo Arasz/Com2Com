@@ -10,13 +10,11 @@ using Page = System.Windows.Controls.Page;
 namespace Com2Com.Common
 {
     /// <summary>
-    /// Helps in between pages navigation ( implements some IoC functionalities )  
+    /// Helps in navigation between pages ( implements some IoC functionalities )  
     /// </summary>
     public static class NavigationHelper
     {
         private static Dictionary<string, Page> _registeredPages = new Dictionary<string, Page>();
-
-        //private static SimpleIoc _pagesIoc = new SimpleIoc();
 
         private static Frame _navigationFrame = App.Current.MainWindow.Content as Frame;
         /// <summary>
