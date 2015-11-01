@@ -9,6 +9,7 @@ using Com2Com.Model;
 using System.Linq;
 using System.Windows.Controls;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Com2Com.ViewModel
 {
@@ -44,6 +45,8 @@ namespace Com2Com.ViewModel
 
         private MasterDeviceModel _masterDeviceModel;
 
+        private WebServiceModel _webServiceModel;
+
         private Dictionary<int, SlaveModel> _slaves;
 
         public ObservableCollection<SlaveModel> SlavesCollection
@@ -61,6 +64,7 @@ namespace Com2Com.ViewModel
             //Initialization
             _masterDeviceModel = new MasterDeviceModel();
             _slaves = _masterDeviceModel.Slaves;
+            _webServiceModel = new WebServiceModel();
 
             //Events subscription
 
