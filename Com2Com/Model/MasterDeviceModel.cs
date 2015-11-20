@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Com2Com.Model
 {
     public class MessageStatusChangedEventArgs: EventArgs

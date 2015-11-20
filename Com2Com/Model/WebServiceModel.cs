@@ -6,6 +6,9 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Windows.Threading;
+using GalaSoft.MvvmLight.Messaging;
+using SlaveDataMessage = Com2Com.ViewModel.SlaveDataMessage;
 
 namespace Com2Com.Model
 {
@@ -17,6 +20,11 @@ namespace Com2Com.Model
         private HttpClient _httpClient;
 
         /// <summary>
+        /// Checks if any slave was changed from web service
+        /// </summary>
+        private DispatcherTimer _getRequestTimer;
+
+        /// <summary>
         /// Web service address
         /// </summary>
         private string _serviceAddress = @"http://localhost/retrieve.php";
@@ -24,7 +32,34 @@ namespace Com2Com.Model
         public WebServiceModel()
         {
             _httpClient = new HttpClient();
+            _getRequestTimer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromSeconds(2),
+                IsEnabled = true,
+            };
+
+            _getRequestTimer.Tick += _getRequestTimer_Tick;
         }
+
+        /// <summary>
+        /// Token which defines message channel used to send slave data to master
+        /// </summary>
+        private string _slaveDataToMasterChannel = "slaveDataToMasterChannel";
+
+        #region Events
+        // I am not sure this is good solution for regular server request
+        private async void _getRequestTimer_Tick(object sender, EventArgs e)
+        {
+                
+                var slavesList = await GetSlaveListAsync();
+
+                if (slavesList != null)
+                {
+                    foreach (SlaveModel slave in slavesList)
+                        Messenger.Default.Send(new SlaveDataMessage(slave, true, true), _slaveDataToMasterChannel); // HACK: We always something changed if there was a data from get request 
+                }
+        }
+        #endregion
 
         /// <summary>
         /// Gets JSON array from web server and converts it to SlaveModel collection

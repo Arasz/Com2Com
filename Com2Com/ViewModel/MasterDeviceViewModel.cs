@@ -10,6 +10,8 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Threading;
+using System;
 
 namespace Com2Com.ViewModel
 {
@@ -29,19 +31,25 @@ namespace Com2Com.ViewModel
     {
 
         #region Events
-        private void _masterDeviceModel_SlaveUpdated(object sender, MessageStatusChangedEventArgs e)
+        private async void _masterDeviceModel_SlaveUpdated(object sender, MessageStatusChangedEventArgs e)
         {
             RaisePropertyChanged(nameof(SlavesCollection));
-            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,false),_outToken);
+            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,false),_fromMasterToSlaveChannel);
             // HACK: We don't know what changed
-            MessengerInstance.Send(new SlaveDataMessage(_slaves[e.SlaveId],true,true), _outToken);
+            MessengerInstance.Send(new SlaveDataMessage(_slaves[e.SlaveId],true,true), _fromMasterToSlaveChannel);
+            // HACK: This line can be moved to HandleSlaveDataMessage but in there method will be called after slave update
+            await _webServiceModel.PostSlaveListAsync(new List<SlaveModel>() { _slaves[e.SlaveId] });
         }
 
         private void _masterDeviceModel_MessageSent(object sender, MessageStatusChangedEventArgs e)
         {
-            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,true), _outToken);
+            MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,true), _fromMasterToSlaveChannel);
         }
+
         #endregion
+
+        private readonly TimeSpan _getQueryInterval = TimeSpan.FromSeconds(2);
+        private DispatcherTimer _webContentTimer;
 
         private MasterDeviceModel _masterDeviceModel;
 
@@ -65,6 +73,11 @@ namespace Com2Com.ViewModel
             _masterDeviceModel = new MasterDeviceModel();
             _slaves = _masterDeviceModel.Slaves;
             _webServiceModel = new WebServiceModel();
+            _webContentTimer = new DispatcherTimer()
+            {
+                Interval = _getQueryInterval,
+                IsEnabled = true,
+            };
 
             //Events subscription
 
@@ -73,44 +86,49 @@ namespace Com2Com.ViewModel
 
             // Messaging
             MessengerInstance = Messenger.Default;
-            MessengerInstance.Register<SlaveDataMessage>(this,_inToken, HandleSlaveDataMessage);
+            MessengerInstance.Register<SlaveDataMessage>(this, _slaveDataToMasterChannel, HandleSlaveDataMessage);
             MessengerInstance.Register<SerialPortSettingsMessage>(this, HandleSerialPortSettingsMessage);
 
             // Commands
             CreateNavigateToSettingsCommand();
             CreateNavigateToSlaveCommand();
             CreateRefreshSlaveListCommand();
+
         }
 
         #region Messages 
         /// <summary>
-        /// Token which defines channel of communication. Only recipient with correct token will receive message.
+        /// Tokens which defines channels of communication. Only recipient with correct token will receive message.
         /// </summary>
-        private string _outToken = "fromMasterToSlave";
-        private string _inToken = "fromSlaveToMaster";
+        private string _fromMasterToSlaveChannel = "fromMasterToSlaveChannel";
+        private string _slaveDataToMasterChannel = "slaveDataToMasterChannel";
 
         /// <summary>
-        /// 
+        /// Receives messages with slave data and pushes it to master model
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message">Message with data of changed slave</param>
         private void HandleSlaveDataMessage(SlaveDataMessage message)
         {
             if (Connected)
             {
                 int slaveId = message.SlaveModel.SlaveId;
                 // TODO: Separate this condition
-                if ((message.AnalogDataChanged || message.DigitalDataChanged))
-                {
-                    _slaves[slaveId].DigitalValue = message.SlaveModel.DigitalValue;
+                if (message.AnalogDataChanged)
                     _slaves[slaveId].AnalogValue = message.SlaveModel.AnalogValue;
+                if (message.DigitalDataChanged)
+                    _slaves[slaveId].DigitalValue = message.SlaveModel.DigitalValue;
 
-                    RaisePropertyChanged(nameof(SlavesCollection));
-                }
+                RaisePropertyChanged(nameof(SlavesCollection));
+
                 _masterDeviceModel.SendMessageToSlave(slaveId, digitalDataChanged: message.DigitalDataChanged, analogDataChanged: message.AnalogDataChanged);
             }
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         private void HandleSerialPortSettingsMessage(SerialPortSettingsMessage message)
         {
             _masterDeviceModel.PortSettings = message.SerialPortSettings;
@@ -165,7 +183,7 @@ namespace Com2Com.ViewModel
             int selectedIndex = soruce.SelectedIndex;
             if(selectedIndex > -1)
             {
-                MessengerInstance.Send(new SlaveDataMessage(SlavesCollection[selectedIndex]), _outToken);
+                MessengerInstance.Send(new SlaveDataMessage(SlavesCollection[selectedIndex]), _fromMasterToSlaveChannel);
                 NavigationHelper.NavigateTo<SlavePage>();
             }
         }

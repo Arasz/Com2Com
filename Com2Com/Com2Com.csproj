@@ -126,6 +126,7 @@
     <Compile Include="View\SlavePage.xaml.cs">
       <DependentUpon>SlavePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="_webContentTimer\Tick.cs" />
     <Page Include="View\MasterDevicePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
