@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Threading;
 using GalaSoft.MvvmLight.Messaging;
 using SlaveDataMessage = Com2Com.ViewModel.SlaveDataMessage;
+using System.Diagnostics;
 
 namespace Com2Com.Model
 {
@@ -34,11 +35,11 @@ namespace Com2Com.Model
             _httpClient = new HttpClient();
             _getRequestTimer = new DispatcherTimer()
             {
-                Interval = TimeSpan.FromSeconds(2),
+                Interval = TimeSpan.FromSeconds(10),
                 IsEnabled = true,
             };
 
-            _getRequestTimer.Tick += _getRequestTimer_Tick;
+           _getRequestTimer.Tick += _getRequestTimer_Tick;
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace Com2Com.Model
         private string _slaveDataToMasterChannel = "slaveDataToMasterChannel";
 
         #region Events
-        // I am not sure this is good solution for regular server request
+        // I am not sure this is good solution for server polling
         private async void _getRequestTimer_Tick(object sender, EventArgs e)
         {
                 
@@ -73,6 +74,8 @@ namespace Com2Com.Model
 
             response.EnsureSuccessStatusCode();
 
+            Debug.Print($"Get response: {response.Content.ReadAsStringAsync().Result} ");
+
             // Read response as a string
             string strContent = await response.Content.ReadAsStringAsync();
             strContent = ExtractJSON(strContent);
@@ -89,10 +92,16 @@ namespace Com2Com.Model
         {
             // TODO: Add exception handling
             // Create HTTP request string with serialized JSON array of slave models
-            string requestString = $"?slaves={JsonConvert.SerializeObject(slaves)}";
+            //string requestString = $"?slaves={JsonConvert.SerializeObject(slaves)}";
+            string requestString = $"{JsonConvert.SerializeObject(slaves)}";
             // Pass this string to the HTTP request message 
-            HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, _serviceAddress);
-            await _httpClient.SendAsync(message);
+            HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, _serviceAddress)
+            {
+                Content = new FormUrlEncodedContent( new Dictionary<string, string> { ["slaves"]= requestString }),
+            };
+            var response = await _httpClient.SendAsync(message);
+
+            Debug.Print($"Post response: {response.Content.ReadAsStringAsync().Result}");
         }
 
         /// <summary>

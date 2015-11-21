@@ -98,7 +98,7 @@ namespace Com2Com.ViewModel
 
         #region Messages 
         /// <summary>
-        /// Tokens which defines channels of communication. Only recipient with correct token will receive message.
+        /// Tokens which defines channels of communication. Only recipient with correct token will receive message. 
         /// </summary>
         private string _fromMasterToSlaveChannel = "fromMasterToSlaveChannel";
         private string _slaveDataToMasterChannel = "slaveDataToMasterChannel";
