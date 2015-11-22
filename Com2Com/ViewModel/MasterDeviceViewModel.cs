@@ -31,14 +31,14 @@ namespace Com2Com.ViewModel
     {
 
         #region Events
-        private async void _masterDeviceModel_SlaveUpdated(object sender, MessageStatusChangedEventArgs e)
+        private void _masterDeviceModel_SlaveUpdated(object sender, MessageStatusChangedEventArgs e)
         {
             RaisePropertyChanged(nameof(SlavesCollection));
             MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,false),_fromMasterToSlaveChannel);
-            // HACK: We don't know what changed
-            MessengerInstance.Send(new SlaveDataMessage(_slaves[e.SlaveId],true,true), _fromMasterToSlaveChannel);
-            // HACK: This line can be moved to HandleSlaveDataMessage but in there method will be called after slave update
-            await _webServiceModel.PostSlaveListAsync(new List<SlaveModel>() { _slaves[e.SlaveId] });
+
+            // HACK: This line will change slave mode visible in slave view if last slave sent from web server was different from opened slave. Line commented. Slave state will not update in slave view.
+            //MessengerInstance.Send(new SlaveDataMessage(_slaves[e.SlaveId],true,true), _fromMasterToSlaveChannel);
+            
         }
 
         private void _masterDeviceModel_MessageSent(object sender, MessageStatusChangedEventArgs e)
@@ -46,42 +46,10 @@ namespace Com2Com.ViewModel
             MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,true), _fromMasterToSlaveChannel);
         }
 
-        /// <summary>
-        /// Updates slaves collection with received data
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void _webServiceModel_ServerDataReceived(object sender, WebServerSynchronizationEventArgs e)
-        {
-            var slavesStates = e.SlavesStates;
-            if( slavesStates != null && Connected)
-            {
-                // HACK: (POSITIVE) This if causes that broadcast value don't updates to value saved on server
-                if(e.SynchronizationCount <= 1)
-                {
-                    ExecuteRefreshSlaveListCommand();
-                }
-                else
-                {
-                    foreach (SlaveModel slave in slavesStates)
-                    {
-                        if (_slaves.ContainsKey(slave.SlaveId))
-                        {
-                            _slaves[slave.SlaveId].DigitalValue = slave.DigitalValue;
-                            _slaves[slave.SlaveId].AnalogValue = slave.AnalogValue;
-                            // HACK: No check ups for data change
-                            _masterDeviceModel.SendMessageToSlave(slave.SlaveId, digitalDataChanged: true, analogDataChanged: true);
-                        }
-                    }
-                }
-            }
-        }
 
         #endregion
 
         private MasterDeviceModel _masterDeviceModel;
-
-        private WebServiceModel _webServiceModel;
 
         private Dictionary<int, SlaveModel> _slaves;
 
@@ -101,9 +69,6 @@ namespace Com2Com.ViewModel
             _masterDeviceModel = new MasterDeviceModel();
             _slaves = _masterDeviceModel.Slaves;
 
-            _webServiceModel = new WebServiceModel();
-            _webServiceModel.ServerDataReceived += _webServiceModel_ServerDataReceived;
-            _webServiceModel.RunWebServerSync();
 
             //Events subscription
 

@@ -44,13 +44,54 @@ namespace Com2Com.Model
 
         #endregion
 
+        #region Events handlers
+        /// <summary>
+        /// Updates slaves collection with received data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void _webServiceModel_ServerDataReceived(object sender, WebServerSynchronizationEventArgs e)
+        {
+            var slavesStates = e.SlavesStates;
+            if (slavesStates != null && Connected)
+            {
+                // HACK: (POSITIVE) This if causes that broadcast value don't updates to value saved on server
+                if (e.SynchronizationCount <= 1)
+                {
+                    // Discover slaves in the network
+                    SendMessageToSlave(_broadcastId);
+                }
+                else
+                {
+                    foreach (SlaveModel slave in slavesStates)
+                    {
+                        if (Slaves.ContainsKey(slave.SlaveId))
+                        {
+                            Slaves[slave.SlaveId].DigitalValue = slave.DigitalValue;
+                            Slaves[slave.SlaveId].AnalogValue = slave.AnalogValue;
+                            // HACK: No check ups for data change
+                            SendMessageToSlave(slave.SlaveId, digitalDataChanged: true, analogDataChanged: true);
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+        private readonly int _broadcastId = 255;
+
         private ProtocolFrame _lastIncomingFrame;
+
+        private WebServiceModel _webService;
 
         public Dictionary<int, SlaveModel> Slaves { get; private set; }
 
         public MasterDeviceModel()
         {
-            Slaves = new Dictionary<int, SlaveModel>() { [255] = new SlaveModel() { SlaveId = 255 } };
+            Slaves = new Dictionary<int, SlaveModel>() { [_broadcastId] = new SlaveModel() { SlaveId = _broadcastId } };
+
+            _webService = new WebServiceModel();
+            _webService.ServerDataReceived += _webServiceModel_ServerDataReceived;
+            _webService.RunWebServerSync();
         }
 
         /// <summary>
@@ -58,11 +99,12 @@ namespace Com2Com.Model
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected override void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        protected override async void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             _lastIncomingFrame =  ReadData();
             UpdateSlave(_lastIncomingFrame);
             OnSlaveUpdated(_lastIncomingFrame, _lastIncomingFrame.Id);
+            await _webService.PostSlaveListAsync(new List<SlaveModel>() { Slaves[_lastIncomingFrame.Id] });
         }
 
         /// <summary>
@@ -120,7 +162,7 @@ namespace Com2Com.Model
             return frame;
         }
         /// <summary>
-        /// 
+        /// Updates slave state with incoming data
         /// </summary>
         /// <param name="frame"></param>
         private void UpdateSlave(ProtocolFrame frame)
