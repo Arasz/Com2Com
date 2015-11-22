@@ -33,7 +33,7 @@ namespace Com2Com.ViewModel
         #region Events
         private async void _masterDeviceModel_SlaveUpdated(object sender, MessageStatusChangedEventArgs e)
         {
-            RaisePropertyChanged(nameof(SlavesCollection));
+            //RaisePropertyChanged(nameof(SlavesCollection));
             MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,false),_fromMasterToSlaveChannel);
             // HACK: We don't know what changed
             MessengerInstance.Send(new SlaveDataMessage(_slaves[e.SlaveId],true,true), _fromMasterToSlaveChannel);
@@ -46,10 +46,31 @@ namespace Com2Com.ViewModel
             MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,true), _fromMasterToSlaveChannel);
         }
 
-        #endregion
+        /// <summary>
+        /// Updates slaves collection with received data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void _webServiceModel_ServerDataReceived(object sender, WebServerSynchronizationEventArgs e)
+        {
+            var slavesStates = e.SlavesStates;
+            if( slavesStates != null && Connected)
+            {
+                foreach (SlaveModel slave in slavesStates)
+                {
+                    if (_slaves.ContainsKey(slave.SlaveId))
+                    {
+                        _slaves[slave.SlaveId].DigitalValue = slave.DigitalValue;
+                        _slaves[slave.SlaveId].AnalogValue = slave.AnalogValue;
+                        RaisePropertyChanged(nameof(SlavesCollection));
+                        // HACK: No check ups for data change
+                        _masterDeviceModel.SendMessageToSlave(slave.SlaveId, digitalDataChanged: true, analogDataChanged: true);
+                    }
+                }
+            }
+        }
 
-        private readonly TimeSpan _getQueryInterval = TimeSpan.FromSeconds(2);
-        private DispatcherTimer _webContentTimer;
+        #endregion
 
         private MasterDeviceModel _masterDeviceModel;
 
@@ -72,12 +93,10 @@ namespace Com2Com.ViewModel
             //Initialization
             _masterDeviceModel = new MasterDeviceModel();
             _slaves = _masterDeviceModel.Slaves;
+
             _webServiceModel = new WebServiceModel();
-            _webContentTimer = new DispatcherTimer()
-            {
-                Interval = _getQueryInterval,
-                IsEnabled = true,
-            };
+            _webServiceModel.ServerDataReceived += _webServiceModel_ServerDataReceived;
+            _webServiceModel.RunWebServerSync();
 
             //Events subscription
 
@@ -181,6 +200,7 @@ namespace Com2Com.ViewModel
         {
             var soruce = e.Source as ListView;
             int selectedIndex = soruce.SelectedIndex;
+            soruce.SelectedIndex = -1;
             if(selectedIndex > -1)
             {
                 MessengerInstance.Send(new SlaveDataMessage(SlavesCollection[selectedIndex]), _fromMasterToSlaveChannel);

@@ -2,65 +2,120 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows.Threading;
-using GalaSoft.MvvmLight.Messaging;
-using SlaveDataMessage = Com2Com.ViewModel.SlaveDataMessage;
 using System.Diagnostics;
 
 namespace Com2Com.Model
 {
+    class WebServerSynchronizationEventArgs: EventArgs
+    {
+        public IEnumerable<SlaveModel> SlavesStates
+        {
+            get; set;
+        }
+
+        public WebServerSynchronizationEventArgs(IEnumerable<SlaveModel> slavesState)
+        {
+            SlavesStates = slavesState;
+        }
+    }
+
     class WebServiceModel : IDisposable
     {
+        #region Events
+        /// <summary>
+        /// Occurs when data from server is received
+        /// </summary>
+        public event EventHandler<WebServerSynchronizationEventArgs> ServerDataReceived;
+
+        void OnServerDataReceived(IEnumerable<SlaveModel> slavesState)
+        {
+            var eventHandler = ServerDataReceived;
+
+            eventHandler?.Invoke(this, new WebServerSynchronizationEventArgs(slavesState));
+        }
+
+        private async void _syncTimer_TickAsync(object sender, EventArgs e)
+        {
+            _receivedSlavesState = await GetSlaveListAsync();
+
+            if (_dataChanged)
+                OnServerDataReceived(_updatedSlavesStates);
+
+            _lastReceivedSlavesState = _receivedSlavesState;
+        }
+
+        #endregion
+
         /// <summary>
         /// HTTP client used to interact with web server
         /// </summary>
         private HttpClient _httpClient;
 
         /// <summary>
-        /// Checks if any slave was changed from web service
-        /// </summary>
-        private DispatcherTimer _getRequestTimer;
-
-        /// <summary>
         /// Web service address
         /// </summary>
         private string _serviceAddress = @"http://localhost/retrieve.php";
 
-        public WebServiceModel()
-        {
-            _httpClient = new HttpClient();
-            _getRequestTimer = new DispatcherTimer()
-            {
-                Interval = TimeSpan.FromSeconds(10),
-                IsEnabled = true,
-            };
+        /// <summary>
+        /// Timer used for getting data from web server in regular intervals
+        /// </summary>
+        private DispatcherTimer _syncTimer;
 
-           _getRequestTimer.Tick += _getRequestTimer_Tick;
+        private IEnumerable<SlaveModel> _lastReceivedSlavesState = new List<SlaveModel>();
+        private IEnumerable<SlaveModel> _receivedSlavesState;
+
+
+        /// <summary>
+        /// Indicates that data received from server has changed
+        /// </summary>
+        private bool _dataChanged
+        {
+            get
+            {
+                return _updatedSlavesStates?.Any() ?? true;
+            }
+        }
+
+        private IEnumerable<SlaveModel> _updatedSlavesStates
+        {
+            get { return _receivedSlavesState?.Except(_lastReceivedSlavesState); }
         }
 
         /// <summary>
-        /// Token which defines message channel used to send slave data to master
+        ///  Synchronization rate
         /// </summary>
-        private string _slaveDataToMasterChannel = "slaveDataToMasterChannel";
+        public TimeSpan SyncInterval { get; set; } = TimeSpan.FromSeconds(15);
 
-        #region Events
-        // I am not sure this is good solution for server polling
-        private async void _getRequestTimer_Tick(object sender, EventArgs e)
+        public WebServiceModel()
         {
-                
-                var slavesList = await GetSlaveListAsync();
+            _httpClient = new HttpClient();
+            _syncTimer = new DispatcherTimer() { Interval = SyncInterval, };
 
-                if (slavesList != null)
-                {
-                    foreach (SlaveModel slave in slavesList)
-                        Messenger.Default.Send(new SlaveDataMessage(slave, true, true), _slaveDataToMasterChannel); // HACK: We always something changed if there was a data from get request 
-                }
+            _syncTimer.Tick += _syncTimer_TickAsync;
         }
-        #endregion
+
+        /// <summary>
+        /// Begins synchronization with web server
+        /// </summary>
+        /// <param name="syncInterval">Synchronization interval</param>
+        public void RunWebServerSync(TimeSpan? syncInterval = null)
+        {
+            if (syncInterval != null)
+                _syncTimer.Interval = syncInterval.Value;
+            _syncTimer.Start();
+        }
+
+        /// <summary>
+        /// Stops web server synchronization
+        /// </summary>
+        public void StopWebServerSync() => _syncTimer.Stop();
+
 
         /// <summary>
         /// Gets JSON array from web server and converts it to SlaveModel collection

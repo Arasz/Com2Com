@@ -17,5 +17,24 @@ namespace Com2Com.Model
         [JsonProperty("id")]
         public int SlaveId { get; set; } = 255;
 
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj))
+                return true;
+
+            var y = obj as SlaveModel;
+
+            return y!=null && (SlaveId == y.SlaveId && DigitalValue == y.DigitalValue && AnalogValue == y.AnalogValue);
+        }
+
+        public override int GetHashCode()
+        {
+            var idHashCode = SlaveId.GetHashCode() << 16;
+            var digitalValueHashCode = DigitalValue.GetHashCode();
+            var analogValueHashCode = AnalogValue.GetHashCode();
+
+            return (idHashCode) ^ digitalValueHashCode ^ analogValueHashCode;
+        }
+
     }
 }
