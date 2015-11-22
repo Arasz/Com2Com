@@ -33,7 +33,7 @@ namespace Com2Com.ViewModel
         #region Events
         private async void _masterDeviceModel_SlaveUpdated(object sender, MessageStatusChangedEventArgs e)
         {
-            //RaisePropertyChanged(nameof(SlavesCollection));
+            RaisePropertyChanged(nameof(SlavesCollection));
             MessengerInstance.Send(new ProtocolFrameMessage(e.Frame,false),_fromMasterToSlaveChannel);
             // HACK: We don't know what changed
             MessengerInstance.Send(new SlaveDataMessage(_slaves[e.SlaveId],true,true), _fromMasterToSlaveChannel);
@@ -56,15 +56,22 @@ namespace Com2Com.ViewModel
             var slavesStates = e.SlavesStates;
             if( slavesStates != null && Connected)
             {
-                foreach (SlaveModel slave in slavesStates)
+                // HACK: (POSITIVE) This if causes that broadcast value don't updates to value saved on server
+                if(e.SynchronizationCount <= 1)
                 {
-                    if (_slaves.ContainsKey(slave.SlaveId))
+                    ExecuteRefreshSlaveListCommand();
+                }
+                else
+                {
+                    foreach (SlaveModel slave in slavesStates)
                     {
-                        _slaves[slave.SlaveId].DigitalValue = slave.DigitalValue;
-                        _slaves[slave.SlaveId].AnalogValue = slave.AnalogValue;
-                        RaisePropertyChanged(nameof(SlavesCollection));
-                        // HACK: No check ups for data change
-                        _masterDeviceModel.SendMessageToSlave(slave.SlaveId, digitalDataChanged: true, analogDataChanged: true);
+                        if (_slaves.ContainsKey(slave.SlaveId))
+                        {
+                            _slaves[slave.SlaveId].DigitalValue = slave.DigitalValue;
+                            _slaves[slave.SlaveId].AnalogValue = slave.AnalogValue;
+                            // HACK: No check ups for data change
+                            _masterDeviceModel.SendMessageToSlave(slave.SlaveId, digitalDataChanged: true, analogDataChanged: true);
+                        }
                     }
                 }
             }

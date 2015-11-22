@@ -19,9 +19,12 @@ namespace Com2Com.Model
             get; set;
         }
 
-        public WebServerSynchronizationEventArgs(IEnumerable<SlaveModel> slavesState)
+        public int SynchronizationCount { get; set; } = 0;
+
+        public WebServerSynchronizationEventArgs(IEnumerable<SlaveModel> slavesState, int synchronizationsCount)
         {
             SlavesStates = slavesState;
+            SynchronizationCount = synchronizationsCount;
         }
     }
 
@@ -37,12 +40,13 @@ namespace Com2Com.Model
         {
             var eventHandler = ServerDataReceived;
 
-            eventHandler?.Invoke(this, new WebServerSynchronizationEventArgs(slavesState));
+            eventHandler?.Invoke(this, new WebServerSynchronizationEventArgs(slavesState, _synchronizationCount));
         }
 
         private async void _syncTimer_TickAsync(object sender, EventArgs e)
         {
             _receivedSlavesState = await GetSlaveListAsync();
+            _synchronizationCount++;
 
             if (_dataChanged)
                 OnServerDataReceived(_updatedSlavesStates);
@@ -66,6 +70,11 @@ namespace Com2Com.Model
         /// Timer used for getting data from web server in regular intervals
         /// </summary>
         private DispatcherTimer _syncTimer;
+
+        /// <summary>
+        /// Shows how many times data were requested from server
+        /// </summary>
+        private int _synchronizationCount = 0;
 
         private IEnumerable<SlaveModel> _lastReceivedSlavesState = new List<SlaveModel>();
         private IEnumerable<SlaveModel> _receivedSlavesState;
@@ -91,6 +100,7 @@ namespace Com2Com.Model
         ///  Synchronization rate
         /// </summary>
         public TimeSpan SyncInterval { get; set; } = TimeSpan.FromSeconds(15);
+
 
         public WebServiceModel()
         {
